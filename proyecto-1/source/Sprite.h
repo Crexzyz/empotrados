@@ -2,15 +2,17 @@
 #define SPRITE_H
 
 #include <tonc.h>
+
 #include "Map.h"
+#include "Rect.h"
 
 #define SPRITE_8PIXEL_OFFSET(state) (8 * state)
 
 #define FLOOR_Y 140
-#define GRAVITY_FORCE 3
-#define WALK_SPEED 10
-#define JUMP_THRESHOLD -15
-#define FALL_MAX_SPEED 15
+#define ACCELERATION 1
+#define WALK_SPEED 5
+#define VELOCITY -10
+#define FALL_MAX_SPEED 5
 
 typedef struct Sprite
 {
@@ -39,9 +41,11 @@ enum SpriteStates
 
 void sprite_load_to_mem();
 void sprite_init(Sprite* sprite, OBJ_ATTR * attribs);
+void sprite_update_pos_collision(Sprite * sprite, Rect ** rects, size_t rects_amount);
+void sprite_update_x_pos_speed(Sprite * sprite);
+void sprite_update_y_pos_speed(Sprite * sprite);
+void sprite_update_xy_collision(Sprite * sprite, Rect ** rects, size_t rects_amount);
 void sprite_update_position(Sprite * sprite);
-void sprite_map_update_position(Map * map, Sprite * sprite);
-void sprite_map_update_x_pos(Map * map, Sprite * sprite);
 void sprite_update_x_pos(Sprite * sprite);
 void sprite_update_y_pos(Sprite * sprite);
 void sprite_change_animation(Sprite * sprite);

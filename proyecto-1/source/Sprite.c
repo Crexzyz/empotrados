@@ -25,11 +25,8 @@ void sprite_init(Sprite * sprite, OBJ_ATTR * attribs)
     sprite->frames_in_air = 0;
 }
 
-void sprite_update_position(Sprite * sprite)
+void sprite_paint(Sprite * sprite)
 {
-    sprite_update_x_pos(sprite);
-    sprite_update_y_pos(sprite);
-
     // Set the sprite the 8 bits per pixel and square sprite bits
 	sprite->sprite_attrs->attr0 = ATTR0_8BPP | ATTR0_SQUARE ;
     // Set the sprite as a 16x16 pixel sprite
@@ -40,20 +37,16 @@ void sprite_update_position(Sprite * sprite)
 	obj_set_pos(sprite->sprite_attrs, sprite->pos_x, sprite->pos_y);
 }
 
+void sprite_update_position(Sprite * sprite)
+{
+    sprite_update_x_pos(sprite);
+    sprite_update_y_pos(sprite);
+    sprite_paint(sprite);
+}
+
 void sprite_update_x_pos(Sprite * sprite)
 {
-    if (key_is_down(KEY_LEFT))
-    {
-        sprite->facing_right = 0;
-        sprite->speed_x = -WALK_SPEED;
-    }
-    else if (key_is_down(KEY_RIGHT))
-    {
-        sprite->facing_right = 1;
-        sprite->speed_x = WALK_SPEED;
-    }
-    else 
-        sprite->speed_x = 0;
+    sprite_update_x_pos_speed(sprite);
 
     sprite->pos_x += sprite->speed_x;
 
@@ -65,20 +58,7 @@ void sprite_update_x_pos(Sprite * sprite)
 
 void sprite_update_y_pos(Sprite * sprite)
 {
-    if (key_hit(KEY_A) && sprite_get_state(sprite) != JUMPING)
-    {
-        sprite->speed_y = JUMP_THRESHOLD;
-        sprite->frames_in_air = 0;
-    }
-
-    if (sprite_get_state(sprite) == JUMPING)
-    {
-        // Move the sprite up decreasingly
-        sprite->speed_y = JUMP_THRESHOLD + (GRAVITY_FORCE * sprite->frames_in_air);
-        // Move the sprite down 
-        sprite->speed_y = MIN(FALL_MAX_SPEED, sprite->speed_y);
-        sprite->frames_in_air++;
-    }
+    sprite_update_x_pos_speed(sprite);
 
     // Move the sprite up or down
     sprite->pos_y += sprite->speed_y;
@@ -113,7 +93,7 @@ void sprite_change_animation(Sprite * sprite)
 int sprite_get_state(Sprite * sprite)
 {
     // Give priority to the jumping state
-    if (sprite->pos_y != FLOOR_Y)
+    if (sprite->speed_y != 0 || sprite->frames_in_air != 0)
         return JUMPING;
     else if(sprite->speed_x != 0)
         return MOVING;
@@ -121,22 +101,15 @@ int sprite_get_state(Sprite * sprite)
         return STILL;
 }
 
-void sprite_map_update_position(Map * map, Sprite * sprite)
+void sprite_update_pos_collision(Sprite * sprite, Rect ** rects, size_t rects_amount)
 {
-    sprite_map_update_x_pos(map, sprite);
-
-
-    // Set the sprite the 8 bits per pixel and square sprite bits
-	sprite->sprite_attrs->attr0 = ATTR0_8BPP | ATTR0_SQUARE ;
-    // Set the sprite as a 16x16 pixel sprite
-	sprite->sprite_attrs->attr1 = ATTR1_SIZE_16;
-    // If the sprite is facing left, flip it
-	sprite->sprite_attrs->attr1 |= (sprite->facing_right ? 0 : ATTR1_HFLIP);
-    // Draw the sprite
-	obj_set_pos(sprite->sprite_attrs, sprite->pos_x, sprite->pos_y);
+    sprite_update_x_pos_speed(sprite);
+    sprite_update_y_pos_speed(sprite);
+    sprite_update_xy_collision(sprite, rects, rects_amount);
+    sprite_paint(sprite);
 }
 
-void sprite_map_update_x_pos(Map * map, Sprite * sprite)
+void sprite_update_x_pos_speed(Sprite * sprite)
 {
     if (key_is_down(KEY_LEFT))
     {
@@ -150,7 +123,71 @@ void sprite_map_update_x_pos(Map * map, Sprite * sprite)
     }
     else 
         sprite->speed_x = 0;
+}
 
-    if(map_get_tile_type(map, sprite->pos_x + sprite->speed_x, sprite->pos_y) == AIR)
-        sprite->pos_x += sprite->speed_x;
+void sprite_update_y_pos_speed(Sprite * sprite)
+{
+    if (key_hit(KEY_A) && sprite_get_state(sprite) != JUMPING)
+    {
+        sprite->speed_y = VELOCITY;
+        sprite->frames_in_air = 0;
+    }
+    
+    if (sprite_get_state(sprite) == JUMPING)
+    {
+        // Move the sprite up decreasingly
+        sprite->speed_y = VELOCITY + (sprite->frames_in_air * ACCELERATION);
+        // Move the sprite down 
+        sprite->speed_y = MIN(FALL_MAX_SPEED, sprite->speed_y);
+        sprite->frames_in_air++;
+    }
+}
+
+void sprite_update_xy_collision(Sprite * sprite, Rect ** rects, size_t rects_amount)
+{
+    Rect sprite_rect;
+    rect_init(&sprite_rect);
+    rect_set_coords(&sprite_rect, sprite->pos_x, sprite->pos_y, sprite->pos_x+15, sprite->pos_y+15);
+
+    int intersect_exists = 0;
+    size_t intersect_rect = 0;
+
+    for(size_t rect = 0; rect < rects_amount; ++rect)
+    {
+        if(rect_intersects(&sprite_rect, &(*rects)[rect], sprite->speed_x, sprite->speed_y))
+        {
+            intersect_exists = 1;        
+            intersect_rect = rect;
+            break;
+        }
+    }
+
+    if(intersect_exists)
+    {
+        if(sprite->speed_x < 0) // Moving left
+            sprite->pos_x = (*rects)[intersect_rect].x2+1;
+        else if (sprite->speed_x > 0) // Moving right
+            sprite->pos_x = (*rects)[intersect_rect].x1-16;
+
+        sprite->speed_x = 0;
+
+        if(sprite->speed_y < 0) // Jumping up
+            sprite->pos_y = (*rects)[intersect_rect].y2+1;
+        else if (sprite->speed_y > 0) // Jumping down
+            sprite->pos_y = (*rects)[intersect_rect].y1-16;
+
+        // Bounce hack
+        sprite->speed_y = VELOCITY;
+        sprite->frames_in_air = 0;
+    }
+
+
+    sprite->pos_x += sprite->speed_x;
+    // Right horizontal limit
+    sprite->pos_x = MIN(240-16, sprite->pos_x);
+    // Left horizontal limit
+    sprite->pos_x = MAX(0, sprite->pos_x);
+
+    // // Move the sprite up or down
+    sprite->pos_y += sprite->speed_y;
 }

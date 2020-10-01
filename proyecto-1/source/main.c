@@ -2,6 +2,7 @@
 
 #include "Sprite.h"
 #include "Map.h"
+#include "Rect.h"
 
 // 128-sprite buffer
 OBJ_ATTR obj_buffer[128];
@@ -19,26 +20,51 @@ int main()
     irq_add(II_VBLANK, NULL);
 	oam_init(obj_buffer, 128);
 
-	Map map;
-	map_init(&map);
-	// map_set_collision_map(&map, );
 	Sprite sprite;
 	sprite_init(&sprite, &obj_buffer[0]);
 	sprite.pos_x = 50;
+	sprite.pos_y = 125;
+
+	Map map;
+	map_init(&map);
+
+	Rect rect;
+	rect_init(&rect);
+	rect_set_sprite(&rect, &obj_buffer[1]);
+	rect_set_coords(&rect, sprite.pos_x, sprite.pos_y, sprite.pos_x+16, sprite.pos_y+16);
+	
+	Rect rect2;
+	rect_init(&rect2);
+	rect_set_sprite(&rect2, &obj_buffer[2]);
+	rect_set_coords(&rect2, 50, 140, 66, 156);
+
+	Rect rect3;
+	rect_init(&rect3);
+	rect_set_sprite(&rect3, &obj_buffer[3]);
+	rect_set_coords(&rect3,  100, 100, 116, 116);
+
+	Rect rect4;
+	rect_init(&rect4);
+	rect_set_sprite(&rect4, &obj_buffer[4]);
+	rect_set_coords(&rect4, 150, 80, 166, 96);
+
 	int currentChar = 0;
-	char test[100]; 
+	// char test[100]; 
+
+	// User sprite does not go here
+	Rect * rects[3];
+	rects[0] = &rect2;
+	rects[1] = &rect3;
+	rects[2] = &rect4;
 
 	while(1)
 	{
-        //hackily slowing down the frame rate
-        //to see anims better
-        for (int i = 0; i < 2; ++i)
-            VBlankIntrWait();
+		VBlankIntrWait();
 
 		// Clean
-		tte_write("#{P:0, 20}               ");
-		snprintf(test, 100, "#{P:0, 20} x:%d y:%d", sprite.pos_x, sprite.pos_y);
-		tte_write(test);
+		// tte_write("#{P:0, 20}                       ");
+		// snprintf(test, 100, "#{P:0, 20} 1 x:%d,%d y:%d,%d", rect.x1,rect.x2, rect.y1, rect.y2);
+		// tte_write(test);
 
         key_poll();
 
@@ -49,13 +75,16 @@ int main()
 			map_key_move(&map);
 		else
 		{
-			// sprite_map_update_position(&map, &sprite);
-			sprite_update_position(&sprite);
+			sprite_update_pos_collision(&sprite, (Rect**)(&rects), 3);
 			sprite_change_animation(&sprite);
+			rect_set_coords(&rect, sprite.pos_x, sprite.pos_y, sprite.pos_x+16, sprite.pos_y+16);
+
+			for(size_t rect = 0; rect < 3; ++rect)
+				rect_paint(rects[rect]);
 		}
 
 		// Move the sprites to VRAM
-		oam_copy(oam_mem, obj_buffer, 1);
+		oam_copy(oam_mem, obj_buffer, 5);
 
 	}
 
