@@ -130,6 +130,7 @@ void sprite_update_y_pos_speed(Sprite * sprite)
     if (key_hit(KEY_A) && sprite_get_state(sprite) != JUMPING)
     {
         sprite->speed_y = VELOCITY;
+        note_play(NOTE_B, 0);
         sprite->frames_in_air = 0;
     }
     
@@ -190,4 +191,10 @@ void sprite_update_xy_collision(Sprite * sprite, Rect ** rects, size_t rects_amo
 
     // // Move the sprite up or down
     sprite->pos_y += sprite->speed_y;
+}
+
+// Play a note
+void note_play(int note, int octave)
+{
+	REG_SND1FREQ = SFREQ_RESET | SND_RATE(note, octave);
 }
