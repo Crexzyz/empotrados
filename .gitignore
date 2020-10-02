@@ -53,5 +53,5 @@ Mkfile.old
 dkms.conf
 
 # Images
-*.png
-*.bmp
+#*.png
+#*.bmp
