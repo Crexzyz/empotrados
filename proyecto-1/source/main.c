@@ -3,6 +3,7 @@
 #include "Sprite.h"
 #include "Map.h"
 #include "Rect.h"
+#include "CoinTile.h"
 
 // 128-sprite buffer
 OBJ_ATTR obj_buffer[128];
@@ -56,6 +57,10 @@ int main()
 
 	Sprite sprite;
 	sprite_init(&sprite, &obj_buffer[0]);
+
+	Coin coin;
+	sprite_coin_init(&coin, &obj_buffer[5]);
+
 	sprite.pos_x = 50;
 	sprite.pos_y = 125;
 
@@ -121,10 +126,19 @@ int main()
 		}
 		rect_set_coords(&rect, sprite.pos_x, sprite.pos_y, sprite.pos_x+16, sprite.pos_y+16);
 
+		sprite_coin_update_pos(&coin);
+		sprite_coin_change_animation(&coin);
+
 		// Move the sprites to VRAM
-		oam_copy(oam_mem, obj_buffer, 5);
+		oam_copy(oam_mem, obj_buffer, 6);
 
 	}
 
 	return 0;
 }
+
+
+
+/**
+** Min del video : 15:12
+*/
