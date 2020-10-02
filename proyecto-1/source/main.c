@@ -6,6 +6,40 @@
 
 // 128-sprite buffer
 OBJ_ATTR obj_buffer[128];
+// sound
+u8 txt_scrolly= 8;
+
+
+// Play a little ditty
+void initial_song()
+{
+	const u8 lens[6]= { 1,1,4, 1,1,4 };
+	const u8 notes[6]= { 0x02, 0x05, 0x12,  0x02, 0x05, 0x12 };
+	int ii;
+	for(ii=0; ii<6; ii++)
+	{
+		note_play(notes[ii]&15, notes[ii]>>4);
+		VBlankIntrDelay(8*lens[ii]);
+	}
+}
+
+void initial_sound()
+{
+	// turn sound on
+	REG_SNDSTAT= SSTAT_ENABLE;
+	// snd1 on left/right ; both full volume
+	REG_SNDDMGCNT = SDMG_BUILD_LR(SDMG_SQR1, 7);
+	// DMG ratio to 100%
+	REG_SNDDSCNT= SDS_DMG100;
+
+	// no sweep
+	REG_SND1SWEEP= SSW_OFF;
+	// envelope: vol=12, decay, max step time (7) ; 50% duty
+	REG_SND1CNT= SSQR_ENV_BUILD(12, 0, 7) | SSQR_DUTY1_2;
+	REG_SND1FREQ= 0;
+
+	initial_song();
+}
 
 int main()
 {
@@ -57,6 +91,9 @@ int main()
 	rects[1] = &rect3;
 	rects[2] = &rect4;
 
+
+	initial_sound();
+
 	while(1)
 	{
 		VBlankIntrWait();
@@ -68,6 +105,9 @@ int main()
 
         key_poll();
 
+		for(size_t rect = 0; rect < 3; ++rect)
+			rect_paint(rects[rect]);
+
 		if(key_hit(KEY_B))
 			currentChar = (currentChar + 1) % 2;
 
@@ -77,11 +117,9 @@ int main()
 		{
 			sprite_update_pos_collision(&sprite, (Rect**)(&rects), 3);
 			sprite_change_animation(&sprite);
-			rect_set_coords(&rect, sprite.pos_x, sprite.pos_y, sprite.pos_x+16, sprite.pos_y+16);
 
-			for(size_t rect = 0; rect < 3; ++rect)
-				rect_paint(rects[rect]);
 		}
+		rect_set_coords(&rect, sprite.pos_x, sprite.pos_y, sprite.pos_x+16, sprite.pos_y+16);
 
 		// Move the sprites to VRAM
 		oam_copy(oam_mem, obj_buffer, 5);
