@@ -92,7 +92,7 @@ int main()
 	Rect rect4;
 	rect_init(&rect4);
 	rect_set_sprite(&rect4, &obj_buffer[4]);
-	rect_set_coords16(&rect4, 150, 80);
+	rect_set_coords16(&rect4, 50, 80);
 
 	int currentChar = 0;
 	// char test[100]; 

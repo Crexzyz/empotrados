@@ -178,13 +178,17 @@ void sprite_update_xy_collision(Sprite * sprite, Rect ** rects, size_t rects_amo
         if(rect_intersects(&sprite_rect, &(*rects)[intersect_rect], 0, sprite->speed_y))
         {
             if(sprite->speed_y < 0) // Jumping up
+            {
                 sprite->pos_y = (*rects)[intersect_rect].y2+1;
+            }
             else if (sprite->speed_y > 0) // Jumping down
+            {
                 sprite->pos_y = (*rects)[intersect_rect].y1-16;
 
-            // Bounce hack
-            sprite->speed_y = VELOCITY;
-            sprite->frames_in_air = 0;
+                // Bounce hack
+                sprite->speed_y = 0;
+                sprite->frames_in_air = 0;
+            } 
         }        
     }
 
