@@ -77,22 +77,22 @@ int main()
 	Rect rect;
 	rect_init(&rect);
 	rect_set_sprite(&rect, &obj_buffer[1]);
-	rect_set_coords(&rect, sprite.pos_x, sprite.pos_y, sprite.pos_x+16, sprite.pos_y+16);
+	rect_set_coords16(&rect, sprite.pos_x, sprite.pos_y);
 	
 	Rect rect2;
 	rect_init(&rect2);
 	rect_set_sprite(&rect2, &obj_buffer[2]);
-	rect_set_coords(&rect2, 50, 140, 66, 156);
+	rect_set_coords16(&rect2, 50, 140);
 
 	Rect rect3;
 	rect_init(&rect3);
 	rect_set_sprite(&rect3, &obj_buffer[3]);
-	rect_set_coords(&rect3,  100, 100, 116, 116);
+	rect_set_coords16(&rect3,  100, 60);
 
 	Rect rect4;
 	rect_init(&rect4);
 	rect_set_sprite(&rect4, &obj_buffer[4]);
-	rect_set_coords(&rect4, 150, 80, 166, 96);
+	rect_set_coords16(&rect4, 150, 80);
 
 	int currentChar = 0;
 	// char test[100]; 
@@ -132,6 +132,12 @@ int main()
 
 		if(key_hit(KEY_A))
 			start=1;
+
+		if(key_hit(KEY_SELECT))
+		{
+			sprite.pos_x = 50;
+			sprite.pos_y = 125;
+		}
 
 		if(start){
 			tte_write("#{es}");

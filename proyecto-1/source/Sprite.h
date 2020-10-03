@@ -11,7 +11,7 @@
 #define FLOOR_Y 140
 #define ACCELERATION 1
 #define WALK_SPEED 5
-#define VELOCITY -10
+#define VELOCITY -9
 #define FALL_MAX_SPEED 5
 
 typedef struct Sprite
