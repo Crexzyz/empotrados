@@ -4,6 +4,7 @@
 #include <tonc.h>
 #include "charsprites.h"
 #include "Sprite.h"
+#include "Rect.h"
 
 #define FLOOR_Y 140
 #define WALK_SPEED 5
@@ -21,10 +22,6 @@ typedef struct Coin
 	int currentScore; // Count of coins collected
 	int hidden; // 1 if the coin is hidden, 0 if not
 } Coin;
-
-typedef struct {
-	int x,y;
-} Point;
 
 void sprite_coin_load_to_mem();
 void sprite_coin_init(Coin* sprite_coin, OBJ_ATTR * attribs);

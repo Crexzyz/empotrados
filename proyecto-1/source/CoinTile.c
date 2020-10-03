@@ -1,5 +1,3 @@
-#include <string.h>
-
 #include "CoinTile.h"
 
 
@@ -64,44 +62,22 @@ void sprite_coin_change_animation(Coin* sprite_coin)
 	sprite_attrs->attr2= ATTR2_BUILD(sprite_coin->first_anim_frame + (sprite_coin->anim_frame*8), 0, 0); 
 }
 
-int do_sprites_collisions(Coin* sprite_coin, Sprite * sprite){
-    Point l1 = {
-        .x = sprite_coin->pos_x,
-        .y = sprite_coin->pos_y
-    };
+int do_sprites_collisions(Coin* sprite_coin, Sprite * sprite){    
+    Rect coin;
+    Rect character;
+    rect_init(&coin);
+    rect_init(&character);
+    rect_set_coords(&coin, sprite_coin->pos_x, sprite_coin->pos_y, sprite_coin->pos_x+15, sprite_coin->pos_y+15);
+    rect_set_coords(&character, sprite->pos_x, sprite->pos_y, sprite->pos_x+15, sprite->pos_y+15);
 
-    Point r1 = {
-        .x = sprite_coin->pos_x + 16,
-        .y = sprite_coin->pos_y + 16
-    };
-
-    Point l2 = {
-        .x = sprite->pos_x,
-        .y = sprite->pos_y
-    };
-
-    Point r2 = {
-        .x = sprite->pos_x + 16,
-        .y = sprite->pos_y + 16
-    };
-
-    // Not overlap cases
-    if(l1.x >= r2.x || l2.x >= r1.x)
-        return 0;
-    
-    if(l1.y >= r2.y || l2.y >= r1.y)
-        return 0;
-
-    // There is a overlap
-    if(!sprite_coin->hidden){ // If the coin is not hidden
-        sprite_coin->currentScore++;
-        obj_hide(sprite_coin->sprite_attrs);
-        sprite_coin->hidden = 1;
+    if(rect_intersects(&coin, &character, sprite->speed_x, sprite->speed_y)){
+        // There is a overlap
+        if(!sprite_coin->hidden){ // If the coin is not hidden
+            sprite_coin->currentScore++;
+            obj_hide(sprite_coin->sprite_attrs);
+            sprite_coin->hidden = 1;
+        }
     }
 
     return 1;
 }
-
-// Volver a preguntar cuando se intenta aceptar una solicitud
-// Usar un cloudFunction -> solicitar a codeBackers
-// 
