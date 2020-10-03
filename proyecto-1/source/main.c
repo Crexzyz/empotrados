@@ -60,7 +60,7 @@ int main()
     gptxt->dx= 12;
 	OBJ_ATTR *oe= oam_mem;
     //init sprite letter
-    obj_puts2(120-12*HWLEN/2, 8, hwstr, 0xF200, oe);
+    obj_puts2(120-12*HWLEN/2, 8, tittle, 0xF200, oe);
 
 	//set tittle propperties
 	PATTERN pats[HWLEN];
@@ -108,7 +108,8 @@ int main()
 
 	int start = 0;
 	int ii= 0;
-	tte_write("#{P:81, 110} Presione A");
+	tte_write("#{P:60, 110} Presione Start");
+
 	while(1)
 	{
 		VBlankIntrWait();
@@ -119,19 +120,20 @@ int main()
 		// tte_write(test);	
 
 		key_poll();
-			
 		for(ii=0; ii<HWLEN; ii++){
         	pat_bounce(&pats[ii]);
         	oe[ii].attr0 &= ~ATTR0_Y_MASK;
        		oe[ii].attr0 |= (pats[ii].fy>>8)& ATTR0_Y_MASK;
         }		
 
+		if(key_hit(KEY_START)){
+			print_instructions();
+		}
+
 		if(key_hit(KEY_A))
 			start=1;
 
 		if(start){
-
-			OAM_CLEAR();
 			tte_write("#{es}");
 			map_load_to_mem();
 			for(size_t rect = 0; rect < 3; ++rect)

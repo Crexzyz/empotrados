@@ -7,7 +7,7 @@
 #define GRAV 0x40
 #define DAMP 0xD0
 #define HWLEN 12
-#define hwstr "Tiquicia Jump"
+#define tittle "Tiquicia Jump"
 #define instr "Presione A para comenzar"
 
 
@@ -22,6 +22,7 @@ typedef struct
 
 void pat_bounce(PATTERN *pat);
 void title_init(PATTERN* pats, OBJ_ATTR *oe);
+void print_instructions();
 
 
 #endif
