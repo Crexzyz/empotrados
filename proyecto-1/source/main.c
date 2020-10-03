@@ -74,30 +74,25 @@ int main()
 	sprite_coin_init(&coin, &obj_buffer[5]);
 
 	sprite.pos_x = 50;
-	sprite.pos_y = 125;
+	sprite.pos_y = 79;
 
 	Map map;
 	map_init(&map);
-
-	Rect rect;
-	rect_init(&rect);
-	rect_set_sprite(&rect, &obj_buffer[1]);
-	rect_set_coords(&rect, sprite.pos_x, sprite.pos_y, sprite.pos_x+16, sprite.pos_y+16);
 	
 	Rect rect2;
 	rect_init(&rect2);
 	rect_set_sprite(&rect2, &obj_buffer[2]);
-	rect_set_coords(&rect2, 50, 140, 66, 156);
+	rect_set_coords16(&rect2, 50, 140);
 
 	Rect rect3;
 	rect_init(&rect3);
 	rect_set_sprite(&rect3, &obj_buffer[3]);
-	rect_set_coords(&rect3,  100, 100, 116, 116);
+	rect_set_coords16(&rect3,  100, 100);
 
 	Rect rect4;
 	rect_init(&rect4);
 	rect_set_sprite(&rect4, &obj_buffer[4]);
-	rect_set_coords(&rect4, 150, 80, 166, 96);
+	rect_set_coords16(&rect4, 150, 80);
 
 	int currentChar = 0;
 
@@ -140,6 +135,12 @@ int main()
 		if(key_hit(KEY_A))
 			start=1;
 
+		if(key_hit(KEY_SELECT))
+		{
+			sprite.pos_x = 50;
+			sprite.pos_y = 30;
+		}
+
 		if(start){
 			tte_write("#{es}");
 			map_load_to_mem();
@@ -156,7 +157,6 @@ int main()
 				sprite_update_pos_collision(&sprite, (Rect**)(&rects), 3);
 				sprite_change_animation(&sprite);
 			}
-			rect_set_coords(&rect, sprite.pos_x, sprite.pos_y, sprite.pos_x+16, sprite.pos_y+16);
 
 			// Change coin animation
 			sprite_coin_update_pos(&coin);

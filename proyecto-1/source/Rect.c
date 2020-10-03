@@ -23,10 +23,23 @@ void rect_set_coords(Rect * rect, u32 x1, u32 y1, u32 x2, u32 y2)
     rect->y2 = y2;
 }
 
+void rect_set_coords16(Rect * rect, u32 x1, u32 y1)
+{
+    rect->x1 = x1;
+    rect->x2 = x1 + 15;
+    rect->y1 = y1;
+    rect->y2 = y1 + 15;
+}
+
 int rect_intersects(Rect * rect1, Rect * rect2, s32 speed_x, s32 speed_y)
 {
-    return (rect1->x1 + speed_x < rect2->x2 && rect1->x2 + speed_x > rect2->x1 &&
-            rect1->y1 + speed_y < rect2->y2 && rect1->y2 + speed_y > rect2->y1);
+    return (rect1->x1 + speed_x <= rect2->x2 && rect1->x2 + speed_x >= rect2->x1 &&
+            rect1->y1 + speed_y <= rect2->y2 && rect1->y2 + speed_y >= rect2->y1);
+}
+
+int rect_intersects_x(Rect * rect1, Rect * rect2)
+{
+    return (rect1->x1 < rect2->x2 && rect1->x2 > rect2->x1);
 }
 
 void rect_paint(Rect * rect)
