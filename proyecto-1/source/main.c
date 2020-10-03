@@ -1,70 +1,29 @@
-#include <tonc.h>
-
 #include "Sprite.h"
 #include "Map.h"
 #include "Rect.h"
-#include "Menu.h"
+#include "music.h"
 
 // 128-sprite buffer
 OBJ_ATTR obj_buffer[128];
 // sound
 u8 txt_scrolly= 8;
 
-// Play a little ditty
-void initial_song()
-{
-	const u8 lens[6]= { 1,1,4, 1,1,4 };
-	const u8 notes[6]= { 0x02, 0x05, 0x12,  0x02, 0x05, 0x12 };
-	int ii;
-	for(ii=0; ii<6; ii++)
-	{
-		note_play(notes[ii]&15, notes[ii]>>4);
-		VBlankIntrDelay(8*lens[ii]);
-	}
-}
 
-void initial_sound()
-{
-	// turn sound on
-	REG_SNDSTAT= SSTAT_ENABLE;
-	// snd1 on left/right ; both full volume
-	REG_SNDDMGCNT = SDMG_BUILD_LR(SDMG_SQR1, 7);
-	// DMG ratio to 100%
-	REG_SNDDSCNT= SDS_DMG100;
-
-	// no sweep
-	REG_SND1SWEEP= SSW_OFF;
-	// envelope: vol=12, decay, max step time (7) ; 50% duty
-	REG_SND1CNT= SSQR_ENV_BUILD(12, 0, 7) | SSQR_DUTY1_2;
-	REG_SND1FREQ= 0;
-
-	initial_song();
-}
 
 int main()
 {
+	sound_setting();
+//	effects();
 	sprite_load_to_mem();
+	map_load_to_mem();
 	
 	REG_BG1CNT = BG_CBB(0) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;
-    REG_DISPCNT =  DCNT_OBJ | DCNT_OBJ_1D | DCNT_MODE0 | DCNT_BG0 | DCNT_BG1;
-	tte_init_se_default(0, BG_CBB(1) | BG_SBB(31));
+    REG_DISPCNT = DCNT_OBJ | DCNT_OBJ_1D | DCNT_MODE0 | DCNT_BG0 | DCNT_BG1;
+	tte_init_se_default(0, BG_CBB(2) | BG_SBB(40) | BG_8BPP | BG_REG_32x32);
 
-    irq_init(NULL);
-    irq_add(II_VBLANK, NULL);
-	oam_init(obj_buffer, 128);
-
-    //init sprite tittle text
-    txt_init_std();
-    txt_init_obj(&oam_mem[0], 0xF200, CLR_YELLOW, 0xEE);
-    //12 px between letters
-    gptxt->dx= 12;
-	OBJ_ATTR *oe= oam_mem;
-    //init sprite letter
-    obj_puts2(120-12*HWLEN/2, 8, tittle, 0xF200, oe);
-
-	//set tittle propperties
-	PATTERN pats[HWLEN];
-    title_init(pats, oe);
+    // irq_init(NULL);
+    // irq_add(II_VBLANK, NULL);
+	// oam_init(obj_buffer, 128);
 
 	Sprite sprite;
 	sprite_init(&sprite, &obj_buffer[0]);
@@ -104,59 +63,51 @@ int main()
 	rects[2] = &rect4;
 
 
-	initial_sound();
+	//initial_sound();
 
-	int start = 0;
-	int ii= 0;
-	tte_write("#{P:60, 110} Presione Start");
 
-	while(1)
+	int keys_pressed, keys_released;
+	
+	do
 	{
 		VBlankIntrWait();
+		mmFrame();
 
 		// Clean
 		// tte_write("#{P:0, 20}                       ");
 		// snprintf(test, 100, "#{P:0, 20} 1 x:%d,%d y:%d,%d", rect.x1,rect.x2, rect.y1, rect.y2);
-		// tte_write(test);	
+		// tte_write(test);
 
-		key_poll();
-		for(ii=0; ii<HWLEN; ii++){
-        	pat_bounce(&pats[ii]);
-        	oe[ii].attr0 &= ~ATTR0_Y_MASK;
-       		oe[ii].attr0 |= (pats[ii].fy>>8)& ATTR0_Y_MASK;
-        }		
+        key_poll();
 
-		if(key_hit(KEY_START)){
-			print_instructions();
+		keys_pressed = keysDown();
+		keys_released = keysUp();
+
+		// Play looping ambulance sound effect out of left speaker if A button is pressed
+		if ( keys_pressed & KEY_A ) {
+			note_play(NOTE_B, 0);
 		}
 
-		if(key_hit(KEY_A))
-			start=1;
+		for(size_t rect = 0; rect < 3; ++rect)
+			rect_paint(rects[rect]);
 
-		if(start){
-			tte_write("#{es}");
-			map_load_to_mem();
-			for(size_t rect = 0; rect < 3; ++rect)
-				rect_paint(rects[rect]);
+		if(key_hit(KEY_B))
+			currentChar = (currentChar + 1) % 2;
 
-			if(key_hit(KEY_B))
-				currentChar = (currentChar + 1) % 2;
-
-			if(currentChar == 1)
-				map_key_move(&map);
-			else
-			{
-				sprite_update_pos_collision(&sprite, (Rect**)(&rects), 3);
-				sprite_change_animation(&sprite);
-
-			}
-			rect_set_coords(&rect, sprite.pos_x, sprite.pos_y, sprite.pos_x+16, sprite.pos_y+16);
-
-			// Move the sprites to VRAM
-			oam_copy(oam_mem, obj_buffer, 5);
+		if(currentChar == 1)
+			map_key_move(&map);
+		else
+		{
+			sprite_update_pos_collision(&sprite, (Rect**)(&rects), 3);
+			sprite_change_animation(&sprite);
 
 		}
-		
-	}
+		rect_set_coords(&rect, sprite.pos_x, sprite.pos_y, sprite.pos_x+16, sprite.pos_y+16);
+
+		// Move the sprites to VRAM
+		oam_copy(oam_mem, obj_buffer, 5);
+
+	}while( 1 );
+
 	return 0;
 }
