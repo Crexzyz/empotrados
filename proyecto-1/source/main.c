@@ -49,7 +49,7 @@ int main()
 	
 	REG_BG1CNT = BG_CBB(0) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;
     REG_DISPCNT = DCNT_OBJ | DCNT_OBJ_1D | DCNT_MODE0 | DCNT_BG0 | DCNT_BG1;
-	tte_init_se_default(0, BG_CBB(2) | BG_SBB(40) | BG_8BPP | BG_REG_32x32);
+	tte_init_se_default(0, BG_CBB(1) | BG_SBB(31));
 
     irq_init(NULL);
     irq_add(II_VBLANK, NULL);
@@ -88,7 +88,11 @@ int main()
 	rect_set_coords(&rect4, 150, 80, 166, 96);
 
 	int currentChar = 0;
-	// char test[100]; 
+
+	// Write in screen
+	char totalScore[100]; 
+	snprintf(totalScore, 100, "#{P:0, 0}Coins:%d", coin.currentScore);
+	tte_write(totalScore);
 
 	// User sprite does not go here
 	Rect * rects[3];
@@ -126,8 +130,15 @@ int main()
 		}
 		rect_set_coords(&rect, sprite.pos_x, sprite.pos_y, sprite.pos_x+16, sprite.pos_y+16);
 
+		// Change coin animation
 		sprite_coin_update_pos(&coin);
 		sprite_coin_change_animation(&coin);
+		// Detect coin-sprite collision
+		if(do_sprites_collisions(&coin,&sprite)){
+			// Write in screen, position x = 0, y = 0
+			snprintf(totalScore, 100, "#{P:0, 0}Coins:%d", coin.currentScore);
+			tte_write(totalScore);
+		}
 
 		// Move the sprites to VRAM
 		oam_copy(oam_mem, obj_buffer, 6);
