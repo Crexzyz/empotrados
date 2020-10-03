@@ -5,45 +5,21 @@
 #include "Rect.h"
 #include "Menu.h"
 #include "CoinTile.h"
+#include "music.h"
+
+#include "soundbank.h"
+#include "soundbank_bin.h"
 
 // 128-sprite buffer
 OBJ_ATTR obj_buffer[128];
 // sound
 u8 txt_scrolly= 8;
 
-// Play a little ditty
-void initial_song()
-{
-	const u8 lens[6]= { 1,1,4, 1,1,4 };
-	const u8 notes[6]= { 0x02, 0x05, 0x12,  0x02, 0x05, 0x12 };
-	int ii;
-	for(ii=0; ii<6; ii++)
-	{
-		note_play(notes[ii]&15, notes[ii]>>4);
-		VBlankIntrDelay(8*lens[ii]);
-	}
-}
-
-void initial_sound()
-{
-	// turn sound on
-	REG_SNDSTAT= SSTAT_ENABLE;
-	// snd1 on left/right ; both full volume
-	REG_SNDDMGCNT = SDMG_BUILD_LR(SDMG_SQR1, 7);
-	// DMG ratio to 100%
-	REG_SNDDSCNT= SDS_DMG100;
-
-	// no sweep
-	REG_SND1SWEEP= SSW_OFF;
-	// envelope: vol=12, decay, max step time (7) ; 50% duty
-	REG_SND1CNT= SSQR_ENV_BUILD(12, 0, 7) | SSQR_DUTY1_2;
-	REG_SND1FREQ= 0;
-
-	initial_song();
-}
-
 int main()
 {
+    // Initialize maxmod with default settings
+    // pass soundbank address, and allocate 8 channels.
+    mmInitDefault( soundbank_bin, 8 );
 	sprite_load_to_mem();
 	
 	REG_BG1CNT = BG_CBB(0) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;
@@ -107,10 +83,12 @@ int main()
 
 	int start = 0;
 	int ii= 0;
+	sound_setting();
+	map_load_to_mem();
 	while(1)
 	{
 		VBlankIntrWait();
-
+		mmFrame();
 		// Clean
 		// tte_write("#{P:0, 20}                       ");
 		// snprintf(test, 100, "#{P:0, 20} 1 x:%d,%d y:%d,%d", rect.x1,rect.x2, rect.y1, rect.y2);
