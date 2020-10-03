@@ -4,6 +4,7 @@
 #include "Map.h"
 #include "Rect.h"
 #include "Menu.h"
+#include "CoinTile.h"
 
 // 128-sprite buffer
 OBJ_ATTR obj_buffer[128];
@@ -46,7 +47,7 @@ int main()
 	sprite_load_to_mem();
 	
 	REG_BG1CNT = BG_CBB(0) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;
-    REG_DISPCNT =  DCNT_OBJ | DCNT_OBJ_1D | DCNT_MODE0 | DCNT_BG0 | DCNT_BG1;
+    REG_DISPCNT = DCNT_OBJ | DCNT_OBJ_1D | DCNT_MODE0 | DCNT_BG0 | DCNT_BG1;
 	tte_init_se_default(0, BG_CBB(1) | BG_SBB(31));
 
     irq_init(NULL);
@@ -68,6 +69,10 @@ int main()
 
 	Sprite sprite;
 	sprite_init(&sprite, &obj_buffer[0]);
+
+	Coin coin;
+	sprite_coin_init(&coin, &obj_buffer[5]);
+
 	sprite.pos_x = 50;
 	sprite.pos_y = 125;
 
@@ -95,7 +100,9 @@ int main()
 	rect_set_coords(&rect4, 150, 80, 166, 96);
 
 	int currentChar = 0;
-	// char test[100]; 
+
+	// char to put in screen
+	char totalScore[100]; 
 
 	// User sprite does not go here
 	Rect * rects[3];
@@ -148,15 +155,23 @@ int main()
 			{
 				sprite_update_pos_collision(&sprite, (Rect**)(&rects), 3);
 				sprite_change_animation(&sprite);
-
 			}
 			rect_set_coords(&rect, sprite.pos_x, sprite.pos_y, sprite.pos_x+16, sprite.pos_y+16);
 
-			// Move the sprites to VRAM
-			oam_copy(oam_mem, obj_buffer, 5);
+			// Change coin animation
+			sprite_coin_update_pos(&coin);
+			sprite_coin_change_animation(&coin);
+			// Detect coin-sprite collision
+			if(do_sprites_collisions(&coin,&sprite)){
+				// Write in screen, position x = 0, y = 0
+				snprintf(totalScore, 100, "#{P:0, 0}Coins:%d", coin.currentScore);
+				tte_write(totalScore);
+			}
+			sprite_coin_unhide(&coin, &sprite);
 
+			// Move the sprites to VRAM
+			oam_copy(oam_mem, obj_buffer, 6);
 		}
-		
 	}
 	return 0;
 }
