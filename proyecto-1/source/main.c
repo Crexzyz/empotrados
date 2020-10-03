@@ -4,6 +4,7 @@
 #include "Map.h"
 #include "Rect.h"
 #include "Menu.h"
+#include "BlockGenerator.h"
 
 // 128-sprite buffer
 OBJ_ATTR obj_buffer[128];
@@ -73,6 +74,7 @@ int main()
 
 	Map map;
 	map_init(&map);
+	map_set_scroll(&map, 0, 0);
 	
 	Rect rect2;
 	rect_init(&rect2);
@@ -90,7 +92,6 @@ int main()
 	rect_set_coords16(&rect4, 150, 80);
 
 	int currentChar = 0;
-	// char test[100]; 
 
 	// User sprite does not go here
 	Rect * rects[3];
@@ -98,6 +99,10 @@ int main()
 	rects[1] = &rect3;
 	rects[2] = &rect4;
 
+	BlockGenerator bgen;
+	blockgen_init(&bgen);
+	blockgen_set_blocks(&bgen, &rects);
+	blockgen_set_map(&bgen, &map);
 
 	initial_sound();
 
@@ -137,14 +142,17 @@ int main()
 		if(start){
 			tte_write("#{es}");
 			map_load_to_mem();
-			for(size_t rect = 0; rect < 3; ++rect)
-				rect_paint(rects[rect]);
+
+			for(int i = 0; i < 3; ++i)
+				rect_paint(rects[i]);
 
 			if(key_hit(KEY_B))
 				currentChar = (currentChar + 1) % 2;
 
 			if(currentChar == 1)
-				map_key_move(&map);
+			{
+				blockgen_autoscroll(&bgen);
+			}
 			else
 			{
 				sprite_update_pos_collision(&sprite, (Rect**)(&rects), 3);
