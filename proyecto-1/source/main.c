@@ -108,7 +108,7 @@ int main()
 
 	int start = 0;
 	int ii= 0;
-	tte_write("#{P:80, 110} Presione A");
+	tte_write("#{P:81, 110} Presione A");
 	while(1)
 	{
 		VBlankIntrWait();
