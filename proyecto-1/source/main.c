@@ -126,8 +126,8 @@ int main()
        		oe[ii].attr0 |= (pats[ii].fy>>8)& ATTR0_Y_MASK;
         }		
 
-		if(key_hit(KEY_START)){
-			print_instructions();
+		if(key_hit(KEY_START)){	
+			print_instructions(oe);
 		}
 
 		if(key_hit(KEY_A))

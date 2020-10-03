@@ -45,8 +45,8 @@ void title_init(PATTERN* pats, OBJ_ATTR *oe){
 
 }
 
-void print_instructions(){
-    OAM_CLEAR();
+void print_instructions(OBJ_ATTR *oe){
+    oam_copy(oe, 0, 12);
 	tte_write("#{es}");
 	tte_write("#{P:5, 30} Utilice las flechas \n para moverse");
 	tte_write("#{P:5, 60} Obtenga la mayor cantidad \n de monedas");
