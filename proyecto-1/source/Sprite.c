@@ -23,6 +23,7 @@ void sprite_init(Sprite * sprite, OBJ_ATTR * attribs)
     sprite->speed_x = 0;
     sprite->speed_y = 0;
     sprite->frames_in_air = 0;
+    sprite->jumps = 0;
 }
 
 void sprite_paint(Sprite * sprite)
@@ -132,6 +133,9 @@ void sprite_update_y_pos_speed(Sprite * sprite)
         sprite->speed_y = VELOCITY;
         note_play(NOTE_B, 0);
         sprite->frames_in_air = 0;
+
+        // Update the count pixels jumped
+        sprite->jumps++;
     }
     
     if (sprite_get_state(sprite) == JUMPING)
@@ -148,7 +152,7 @@ void sprite_update_xy_collision(Sprite * sprite, Rect ** rects, size_t rects_amo
 {
     Rect sprite_rect;
     rect_init(&sprite_rect);
-    rect_set_coords(&sprite_rect, sprite->pos_x, sprite->pos_y, sprite->pos_x+15, sprite->pos_y+15);
+    rect_set_coords16(&sprite_rect, sprite->pos_x, sprite->pos_y);
 
     int intersect_exists = 0;
     size_t intersect_rect = 0;
@@ -165,23 +169,50 @@ void sprite_update_xy_collision(Sprite * sprite, Rect ** rects, size_t rects_amo
 
     if(intersect_exists)
     {
-        if(sprite->speed_x < 0) // Moving left
-            sprite->pos_x = (*rects)[intersect_rect].x2+1;
-        else if (sprite->speed_x > 0) // Moving right
-            sprite->pos_x = (*rects)[intersect_rect].x1-16;
+        if(rect_intersects(&sprite_rect, &(*rects)[intersect_rect], sprite->speed_x, 0))
+        {
+            if(sprite->speed_x < 0) // Moving left
+                sprite->pos_x = (*rects)[intersect_rect].x2+1;
+            else if (sprite->speed_x > 0) // Moving right
+                sprite->pos_x = (*rects)[intersect_rect].x1-16;
 
-        sprite->speed_x = 0;
+            sprite->speed_x = 0;
+        }
 
-        if(sprite->speed_y < 0) // Jumping up
-            sprite->pos_y = (*rects)[intersect_rect].y2+1;
-        else if (sprite->speed_y > 0) // Jumping down
-            sprite->pos_y = (*rects)[intersect_rect].y1-16;
+        if(rect_intersects(&sprite_rect, &(*rects)[intersect_rect], 0, sprite->speed_y))
+        {
+            if(sprite->speed_y < 0) // Jumping up
+            {
+                sprite->pos_y = (*rects)[intersect_rect].y2+1;
+            }
+            else if (sprite->speed_y > 0) // Jumping down
+            {
+                sprite->pos_y = (*rects)[intersect_rect].y1-16;
 
-        // Bounce hack
-        sprite->speed_y = VELOCITY;
-        sprite->frames_in_air = 0;
+                // Bounce hack
+                sprite->speed_y = 0;
+                sprite->frames_in_air = 0;
+            } 
+        }
     }
 
+    if(!intersect_exists)
+    {
+        int above_block = 0;
+        for(size_t rect = 0; rect < rects_amount; ++rect)
+        {
+            // If above any block in the map
+            if(rect_intersects(&sprite_rect, &(*rects)[rect], 0, 1))
+            {
+                above_block = 1;        
+                break;
+            }
+        }
+        
+        if(!above_block && sprite->speed_y == 0)
+            sprite->frames_in_air = (1 - VELOCITY) / ACCELERATION; // 9
+    }
+    
 
     sprite->pos_x += sprite->speed_x;
     // Right horizontal limit

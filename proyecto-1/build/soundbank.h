@@ -1,9 +1,0 @@
-#define MOD_A	0
-#define SFX_AMBULANCE	31
-#define SFX_BOOM	32
-#define SFX_BY_ALLISTER	33
-#define MOD_FLATOUTLIES	1
-#define MOD_S	2
-#define MSL_NSONGS	3
-#define MSL_NSAMPS	70
-#define MSL_BANKSIZE	73

@@ -1,8 +1,11 @@
+#include <tonc.h>
+
 #include "Sprite.h"
 #include "Map.h"
 #include "Rect.h"
-#include "music.h"
 #include "Menu.h"
+#include "CoinTile.h"
+#include "music.h"
 
 #include "soundbank.h"
 #include "soundbank_bin.h"
@@ -11,17 +14,16 @@ OBJ_ATTR obj_buffer[128];
 // sound
 u8 txt_scrolly= 8;
 
-
 int main()
 {
-	    // Initialize maxmod with default settings
+    // Initialize maxmod with default settings
     // pass soundbank address, and allocate 8 channels.
     mmInitDefault( soundbank_bin, 8 );
 	sprite_load_to_mem();
 	
 	REG_BG1CNT = BG_CBB(0) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;
-    REG_DISPCNT =  DCNT_OBJ | DCNT_OBJ_1D | DCNT_MODE0 | DCNT_BG0 | DCNT_BG1;
-	tte_init_se_default(0, BG_CBB(2) | BG_SBB(40) | BG_8BPP | BG_REG_32x32);
+    REG_DISPCNT = DCNT_OBJ | DCNT_OBJ_1D | DCNT_MODE0 | DCNT_BG0 | DCNT_BG1;
+	tte_init_se_default(0, BG_CBB(1) | BG_SBB(31));
 
     irq_init(NULL);
     irq_add(II_VBLANK, NULL);
@@ -29,47 +31,45 @@ int main()
 
     //init sprite tittle text
     txt_init_std();
-    txt_init_obj(&oam_mem[0], 0xF200, CLR_YELLOW, 0xEE);
     //12 px between letters
     gptxt->dx= 12;
 	OBJ_ATTR *oe= oam_mem;
     //init sprite letter
-    obj_puts2(120-12*HWLEN/2, 8, tittle, 0xF200, oe);
-
 	//set tittle propperties
 	PATTERN pats[HWLEN];
     title_init(pats, oe);
 
 	Sprite sprite;
 	sprite_init(&sprite, &obj_buffer[0]);
+
+	Coin coin;
+	sprite_coin_init(&coin, &obj_buffer[5]);
+
 	sprite.pos_x = 50;
-	sprite.pos_y = 125;
+	sprite.pos_y = 79;
 
 	Map map;
 	map_init(&map);
-
-	Rect rect;
-	rect_init(&rect);
-	rect_set_sprite(&rect, &obj_buffer[1]);
-	rect_set_coords(&rect, sprite.pos_x, sprite.pos_y, sprite.pos_x+16, sprite.pos_y+16);
 	
 	Rect rect2;
 	rect_init(&rect2);
 	rect_set_sprite(&rect2, &obj_buffer[2]);
-	rect_set_coords(&rect2, 50, 140, 66, 156);
+	rect_set_coords16(&rect2, 50, 140);
 
 	Rect rect3;
 	rect_init(&rect3);
 	rect_set_sprite(&rect3, &obj_buffer[3]);
-	rect_set_coords(&rect3,  100, 100, 116, 116);
+	rect_set_coords16(&rect3,  100, 100);
 
 	Rect rect4;
 	rect_init(&rect4);
 	rect_set_sprite(&rect4, &obj_buffer[4]);
-	rect_set_coords(&rect4, 150, 80, 166, 96);
+	rect_set_coords16(&rect4, 150, 80);
 
 	int currentChar = 0;
-	// char test[100]; 
+
+	// char to put in screen
+	char totalScore[100]; 
 
 	// User sprite does not go here
 	Rect * rects[3];
@@ -79,12 +79,9 @@ int main()
 
 
 	initial_sound();
+
 	int start = 0;
 	int ii= 0;
-	tte_write("#{P:60, 110} Presione Start");
-		int keys_pressed, keys_released;
-	int enable = 1;
-
 	sound_setting();
 //	effects();
 	map_load_to_mem();
@@ -92,11 +89,11 @@ int main()
 	{
 		VBlankIntrWait();
 		mmFrame();
-
 		// Clean
 		// tte_write("#{P:0, 20}                       ");
 		// snprintf(test, 100, "#{P:0, 20} 1 x:%d,%d y:%d,%d", rect.x1,rect.x2, rect.y1, rect.y2);
-		// tte_write(test);
+		// tte_write(test);	
+
 		key_poll();
 		for(ii=0; ii<HWLEN; ii++){
         	pat_bounce(&pats[ii]);
@@ -108,8 +105,16 @@ int main()
 			print_instructions(oe);
 		}
 
-		if(key_hit(KEY_A))
+		if(key_hit(KEY_A)){
+			oam_copy(oe, 0, 12);
 			start=1;
+		}
+
+		if(key_hit(KEY_SELECT))
+		{
+			sprite.pos_x = 50;
+			sprite.pos_y = 30;
+		}
 
 		if(start){
 			tte_write("#{es}");
@@ -126,16 +131,30 @@ int main()
 			{
 				sprite_update_pos_collision(&sprite, (Rect**)(&rects), 3);
 				sprite_change_animation(&sprite);
-
 			}
-			rect_set_coords(&rect, sprite.pos_x, sprite.pos_y, sprite.pos_x+16, sprite.pos_y+16);
+
+			// Change coin animation
+			sprite_coin_update_pos(&coin);
+			sprite_coin_change_animation(&coin);
+			// Detect coin-sprite collision
+			if(do_sprites_collisions(&coin,&sprite)){
+				// Write in screen, position x = 0, y = 0
+				snprintf(totalScore, 100, "#{P:0, 0}Coins:%d", coin.currentScore);
+				tte_write(totalScore);
+			}
+			sprite_coin_unhide(&coin, &sprite);
 
 			// Move the sprites to VRAM
-			oam_copy(oam_mem, obj_buffer, 5);
-
+			oam_copy(oam_mem, obj_buffer, 6);
 		}
 
-
+		if(coin.currentScore==1 || sprite.pos_y > 160){
+				final_screen(oam_mem, coin.currentScore);
+				sprite.pos_x = 50;
+				sprite.pos_y = 30;
+				coin.currentScore=0;
+				start=0;
+		}
 	}while( 1 );
 	return 0;
 }

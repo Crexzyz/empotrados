@@ -29,6 +29,8 @@ void pat_bounce(PATTERN *pat)
 }
 
 void title_init(PATTERN* pats, OBJ_ATTR *oe){
+    txt_init_obj(&oam_mem[0], 0xF200, CLR_YELLOW, 0xEE);
+    obj_puts2(120-12*HWLEN/2, 8, tittle, 0xF200, oe);
     int ii =0;
     for(ii=0; ii<HWLEN; ii++)
     {
@@ -43,14 +45,26 @@ void title_init(PATTERN* pats, OBJ_ATTR *oe){
         oe[ii].attr0 |= 160;
     }
 
+    tte_write("#{P:60, 110} Presione Start");
+
 }
 
-void print_instructions(){
-    OAM_CLEAR();
+void print_instructions(OBJ_ATTR *oe){
+    oam_copy(oe, 0, 12);
 	tte_write("#{es}");
 	tte_write("#{P:5, 30} Utilice las flechas \n para moverse");
-	tte_write("#{P:5, 60} Obtenga la mayor cantidad \n de monedas");
+	tte_write("#{P:5, 60} Obtenga 1 moneda \n para ganar el juego");
 	tte_write("#{P:5, 90} Suerte");
 	tte_write("#{P:5, 120} Presione A para continuar");
+}
+
+void final_screen(OBJ_ATTR *oam, int currentScore){
+    char totalScore[100]; 
+    oam_copy(oam, 0, 6);
+	tte_write("#{es}");
+	tte_write("#{P:65, 40} Fin del Juego");
+    snprintf(totalScore, 100, "#{P:70, 80} Su puntaje es:%d", currentScore);
+	tte_write(totalScore);
+	tte_write("#{P:0, 120} Presione Start para continuar");
 }
 
