@@ -25,6 +25,7 @@ typedef struct Sprite
 	int speed_x;
 	int speed_y;
 	int frames_in_air;
+	int jumps; // Pixels needed to put another coin
 } Sprite;
 
 enum SpriteFrames 

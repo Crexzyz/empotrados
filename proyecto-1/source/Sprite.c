@@ -23,6 +23,7 @@ void sprite_init(Sprite * sprite, OBJ_ATTR * attribs)
     sprite->speed_x = 0;
     sprite->speed_y = 0;
     sprite->frames_in_air = 0;
+    sprite->jumps = 0;
 }
 
 void sprite_paint(Sprite * sprite)
@@ -132,6 +133,9 @@ void sprite_update_y_pos_speed(Sprite * sprite)
         sprite->speed_y = VELOCITY;
         note_play(NOTE_B, 0);
         sprite->frames_in_air = 0;
+
+        // Update the count pixels jumped
+        sprite->jumps++;
     }
     
     if (sprite_get_state(sprite) == JUMPING)
@@ -189,7 +193,7 @@ void sprite_update_xy_collision(Sprite * sprite, Rect ** rects, size_t rects_amo
                 sprite->speed_y = 0;
                 sprite->frames_in_air = 0;
             } 
-        }        
+        }
     }
 
     if(!intersect_exists)
