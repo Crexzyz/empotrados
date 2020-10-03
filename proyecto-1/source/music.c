@@ -40,7 +40,7 @@ void sound_setting()
 	irqSet( IRQ_VBLANK, mmVBlank );
 	irqEnable(IRQ_VBLANK);
 
-	consoleDemoInit();
+	 
 
 	// initialise with soundbank and 8 channels
     mmInitDefault( (mm_addr)soundbank_bin, 8 );
