@@ -5,10 +5,7 @@
 #include "charsprites.h"
 #include "Sprite.h"
 #include "Rect.h"
-
-#define FLOOR_Y 140
-#define WALK_SPEED 5
-#define FALL_MAX_SPEED 5
+#include <stdlib.h> // For random numbers
 
 typedef struct Coin
 {
@@ -32,5 +29,8 @@ void sprite_coin_change_animation(Coin* sprite_coin);
 
 // Return true or false if there is a collision
 int do_sprites_collisions(Coin* sprite_coin, Sprite * sprite);
+
+// Verify if the count of pixels is the needed to put another coin
+int sprite_coin_unhide(Coin* sprite_coin, Sprite * sprite);
 
 #endif

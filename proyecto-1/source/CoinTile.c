@@ -3,10 +3,10 @@
 
 void sprite_coin_init(Coin* sprite_coin, OBJ_ATTR * attribs){
     sprite_coin->sprite_attrs = attribs;
-    sprite_coin->first_anim_frame = 10 * 8; 
+    sprite_coin->first_anim_frame = 10 * 8;
     sprite_coin->anim_frame = 10 * 8;
-    sprite_coin->pos_x = 66; 
-    sprite_coin->pos_y = 80; 
+    sprite_coin->pos_x = 66;
+    sprite_coin->pos_y = 60;
     sprite_coin->speed_y = 5;
     sprite_coin->framesCurrent = 0;
     sprite_coin->currentScore = 0;
@@ -34,8 +34,6 @@ void sprite_coin_update_pos(Coin* sprite_coin)
 
 void sprite_coin_update_y_pos(Coin* sprite_coin)
 {
-    //sprite_update_x_pos_speed(sprite);
-
     // Move the sprite up or down
     //sprite_coin->pos_y += sprite_coin->speed_y;
 
@@ -80,4 +78,25 @@ int do_sprites_collisions(Coin* sprite_coin, Sprite * sprite){
     }
 
     return 1;
+}
+
+int sprite_coin_unhide(Coin* sprite_coin, Sprite * sprite){
+    if(sprite_coin->hidden){ // If the coin is hidden
+        if(sprite->jumps >= 4){ // Condition to put another coin
+            sprite_coin->hidden = 0;
+            srand(sprite_coin->pos_x);
+            sprite_coin->pos_x = (rand() % (224 - 17)) + 17;
+            sprite_coin_update_pos(sprite_coin);
+            obj_unhide(sprite_coin->sprite_attrs, 0 );
+            // Reset the count
+            sprite->jumps = 0;
+            // Count reached
+            return 1;
+        }
+    }else if(sprite->jumps >= 4){
+        // Reset the count
+        sprite->jumps = 0;
+    }
+    // Count not reached
+    return 0;
 }

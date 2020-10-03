@@ -139,6 +139,7 @@ int main()
 			snprintf(totalScore, 100, "#{P:0, 0}Coins:%d", coin.currentScore);
 			tte_write(totalScore);
 		}
+		sprite_coin_unhide(&coin, &sprite);
 
 		// Move the sprites to VRAM
 		oam_copy(oam_mem, obj_buffer, 6);

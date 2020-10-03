@@ -10,7 +10,7 @@
 
 #define FLOOR_Y 140
 #define ACCELERATION 1
-#define WALK_SPEED 5
+#define WALK_SPEED 2
 #define VELOCITY -10
 #define FALL_MAX_SPEED 5
 
@@ -25,6 +25,7 @@ typedef struct Sprite
 	int speed_x;
 	int speed_y;
 	int frames_in_air;
+	int jumps; // Pixels needed to put another coin
 } Sprite;
 
 enum SpriteFrames 
