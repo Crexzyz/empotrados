@@ -56,13 +56,10 @@ int main()
 
     //init sprite tittle text
     txt_init_std();
-    txt_init_obj(&oam_mem[0], 0xF200, CLR_YELLOW, 0xEE);
     //12 px between letters
     gptxt->dx= 12;
 	OBJ_ATTR *oe= oam_mem;
     //init sprite letter
-    obj_puts2(120-12*HWLEN/2, 8, tittle, 0xF200, oe);
-
 	//set tittle propperties
 	PATTERN pats[HWLEN];
     title_init(pats, oe);
@@ -110,8 +107,6 @@ int main()
 
 	int start = 0;
 	int ii= 0;
-	tte_write("#{P:60, 110} Presione Start");
-
 	while(1)
 	{
 		VBlankIntrWait();
@@ -132,8 +127,10 @@ int main()
 			print_instructions(oe);
 		}
 
-		if(key_hit(KEY_A))
+		if(key_hit(KEY_A)){
+			oam_copy(oe, 0, 12);
 			start=1;
+		}
 
 		if(key_hit(KEY_SELECT))
 		{
@@ -171,6 +168,14 @@ int main()
 
 			// Move the sprites to VRAM
 			oam_copy(oam_mem, obj_buffer, 6);
+		}
+
+		if(coin.currentScore==1){
+				final_screen(oam_mem, coin.currentScore);
+				sprite.pos_x = 50;
+				sprite.pos_y = 30;
+				coin.currentScore=0;
+				start=0;
 		}
 	}
 	return 0;
