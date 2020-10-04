@@ -1,4 +1,3 @@
-#include "gba.h"
 #include <maxmod.h>
 
 #include <stdio.h>

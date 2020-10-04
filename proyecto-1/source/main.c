@@ -20,7 +20,7 @@ int main()
 {
     // Initialize maxmod with default settings
     // pass soundbank address, and allocate 8 channels.
-    mmInitDefault( soundbank_bin, 8 );
+    mmInitDefault( (mm_addr) soundbank_bin, 8 );
 	sprite_load_to_mem();
 	
 	REG_BG1CNT = BG_CBB(0) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;
@@ -47,42 +47,45 @@ int main()
 	Coin coin;
 	sprite_coin_init(&coin, &obj_buffer[5]);
 
-	sprite.pos_x = 50;
-	sprite.pos_y = 79;
+	sprite.pos_x = 30; sprite.pos_y = 120;
 
 	Map map;
 	map_init(&map);
 	map_set_scroll(&map, 0, 0);
 	
-	Rect rect2;
-	rect_init(&rect2);
-	rect_set_sprite(&rect2, &obj_buffer[2]);
-	rect_set_coords16(&rect2, 50, 140);
+	Rect r1;
+	rect_init(&r1);
+	rect_set_sprite(&r1, &obj_buffer[1]);
+	rect_set_coords16(&r1, 30, 150);
 
-	Rect rect3;
-	rect_init(&rect3);
-	rect_set_sprite(&rect3, &obj_buffer[3]);
-	rect_set_coords16(&rect3,  100, 100);
+	Rect r2;
+	rect_init(&r2);
+	rect_set_sprite(&r2, &obj_buffer[2]);
+	rect_set_coords16(&r2, 90, 110);
 
-	Rect rect4;
-	rect_init(&rect4);
-	rect_set_sprite(&rect4, &obj_buffer[4]);
-	rect_set_coords16(&rect4, 150, 80);
+	Rect r3;
+	rect_init(&r3);
+	rect_set_sprite(&r3, &obj_buffer[3]);
+	rect_set_coords16(&r3, 140, 70);
 
-	int currentChar = 0;
+	Rect r4;
+	rect_init(&r4);
+	rect_set_sprite(&r4, &obj_buffer[4]);
+	rect_set_coords16(&r4, 200, 30);
 
 	// char to put in screen
 	char totalScore[100]; 
 
 	// User sprite does not go here
-	Rect * rects[3];
-	rects[0] = &rect2;
-	rects[1] = &rect3;
-	rects[2] = &rect4;
+	Rect * rects[MAX_BLOCKS];
+	rects[0] = &r1;
+	rects[1] = &r2;
+	rects[2] = &r3;
+	rects[3] = &r4;
 
 	BlockGenerator bgen;
 	blockgen_init(&bgen);
-	blockgen_set_blocks(&bgen, &rects);
+	blockgen_set_blocks(&bgen, (Rect**)(&rects));
 	blockgen_set_map(&bgen, &map);
 
 	initial_sound();
@@ -95,10 +98,6 @@ int main()
 	{
 		VBlankIntrWait();
 		mmFrame();
-		// Clean
-		// tte_write("#{P:0, 20}                       ");
-		// snprintf(test, 100, "#{P:0, 20} 1 x:%d,%d y:%d,%d", rect.x1,rect.x2, rect.y1, rect.y2);
-		// tte_write(test);	
 
 		key_poll();
 		for(ii=0; ii<HWLEN; ii++){
@@ -126,21 +125,14 @@ int main()
 			tte_write("#{es}");
 			map_load_to_mem();
 
-			for(int i = 0; i < 3; ++i)
+			for(int i = 0; i < MAX_BLOCKS; ++i)
 				rect_paint(rects[i]);
 
-			if(key_hit(KEY_B))
-				currentChar = (currentChar + 1) % 2;
+			int do_scroll = blockgen_autoscroll(&bgen);
+			if(do_scroll) sprite.pos_y += 1;
 
-			if(currentChar == 1)
-			{
-				blockgen_autoscroll(&bgen);
-			}
-			else
-			{
-				sprite_update_pos_collision(&sprite, (Rect**)(&rects), 3);
-				sprite_change_animation(&sprite);
-			}
+			sprite_update_pos_collision(&sprite, (Rect**)(&rects), MAX_BLOCKS);
+			sprite_change_animation(&sprite);
 
 			// Change coin animation
 			sprite_coin_update_pos(&coin);
@@ -157,7 +149,7 @@ int main()
 			oam_copy(oam_mem, obj_buffer, 6);
 		}
 
-		if(coin.currentScore==1 || sprite.pos_y > 160){
+		if(coin.currentScore==6 || sprite.pos_y > 160){
 				final_screen(oam_mem, coin.currentScore);
 				sprite.pos_x = 50;
 				sprite.pos_y = 30;
