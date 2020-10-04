@@ -9,8 +9,10 @@ void blockgen_init(BlockGenerator * blockgen)
     blockgen->r4 = 0;
     blockgen->map = 0;
     blockgen->autoscrolling_speed = 1;
-    blockgen->frame_interval = 10;
+    blockgen->frame_interval = 2;
     blockgen->frame_counter = 0;
+    blockgen->previous_direction = 0;
+    blockgen->previous_direction_counter = 0;
 }
 
 void blockgen_set_map(BlockGenerator * blockgen, Map * map)
@@ -26,7 +28,7 @@ void blockgen_set_blocks(BlockGenerator * blockgen, Rect ** blocks)
     blockgen->r4 = &(*blocks)[3];
 }
 
-Rect * blockgen_get_block(BlockGenerator * blockgen, u32 block)
+Rect * blockgen_get_block(BlockGenerator * blockgen, size_t block)
 {
     switch (block)
     {
@@ -36,11 +38,6 @@ Rect * blockgen_get_block(BlockGenerator * blockgen, u32 block)
         case 3: return blockgen->r4;
         default: return NULL;
     }
-}
-
-Rect * blockgen_get_bottom_block(BlockGenerator * blockgen)
-{
-    return NULL;
 }
 
 int blockgen_autoscroll(BlockGenerator * blockgen)
@@ -66,52 +63,48 @@ int blockgen_autoscroll(BlockGenerator * blockgen)
     return 0;
 }
 
-void blockgen_reposition(BlockGenerator * blockgen, Rect * block )
+void blockgen_reposition(BlockGenerator * blockgen, Rect * target )
 {
-    u8 new_pos_x = qran_range(20, 220);
-    rect_set_coords16(block, new_pos_x, 0);
-}
-
-void blockgen_move_blocks_with_map(BlockGenerator * blockgen)
-{
-    Map * map = blockgen->map;
-    if(map)
+    // Lowest Y is 160
+    u8 highest_x = 0;
+    u8 highest_y = 160;
+    // Get X coordinate from the highest block
+    for(size_t block = 0; block < MAX_BLOCKS; ++block)
     {
-        if(key_is_down(KEY_RIGHT))
+        if(blockgen_get_block(blockgen, block)->y1 < highest_y)
         {
-            map_set_scroll(map, map->scroll_x + 2, map->scroll_y);
-            for(size_t block = 0; block < MAX_BLOCKS; ++block)
-            {
-                Rect * rect = blockgen_get_block(blockgen, block);
-                rect_set_coords16(rect, rect->x1 + 2, rect->y1);
-            }
-        }
-        if(key_is_down(KEY_LEFT))
-        {
-            map_set_scroll(map, map->scroll_x - 2, map->scroll_y);
-            for(size_t block = 0; block < MAX_BLOCKS; ++block)
-            {
-                Rect * rect = blockgen_get_block(blockgen, block);
-                rect_set_coords16(rect, rect->x1 - 2, rect->y1);
-            }
-        }
-        if(key_is_down(KEY_DOWN))
-        {
-            map_set_scroll(map, map->scroll_x, map->scroll_y + 2);
-            for(size_t block = 0; block < MAX_BLOCKS; ++block)
-            {
-                Rect * rect = blockgen_get_block(blockgen, block);
-                rect_set_coords16(rect, rect->x1, rect->y1 + 2);
-            }
-        }
-        if(key_is_down(KEY_UP))
-        {
-            map_set_scroll(map, map->scroll_x, map->scroll_y - 2);
-            for(size_t block = 0; block < MAX_BLOCKS; ++block)
-            {
-                Rect * rect = blockgen_get_block(blockgen, block);
-                rect_set_coords16(rect, rect->x1, rect->y1 - 2);
-            }
+            highest_y = blockgen_get_block(blockgen, block)->y1;
+            highest_x = blockgen_get_block(blockgen, block)->x1;
         }
     }
+
+    // Randomly choose if next block comes at the left or the right
+    // of the highest one
+    u8 new_pos_at_left = 1;
+
+    if(new_pos_at_left == blockgen->previous_direction)
+        blockgen->previous_direction_counter++;
+
+    if(blockgen->previous_direction_counter > 2)
+    {
+        blockgen->previous_direction = new_pos_at_left = !new_pos_at_left;
+        blockgen->previous_direction_counter = 0;
+    }
+
+    u8 new_pos_x = 0;
+
+    if(new_pos_at_left || highest_x >= 220) // Random choosing or block too close to the right
+    {   
+        if(highest_x <= 80) // Too close to the left, force the block to the right
+            new_pos_x = qran_range(highest_x + 40, 130);
+        else
+            new_pos_x = qran_range(MAX(20, highest_x - 60), highest_x - 40);
+    }
+    else
+    {
+        new_pos_x = qran_range(highest_x + 40, MIN(highest_x + 80, 220));
+    }
+
+
+    rect_set_coords16(target, new_pos_x, 0);
 }

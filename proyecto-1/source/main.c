@@ -149,7 +149,7 @@ int main()
 			oam_copy(oam_mem, obj_buffer, 6);
 		}
 
-		if(coin.currentScore==6 || sprite.pos_y > 160){
+		if(coin.currentScore==3 || sprite.pos_y > 160){
 				final_screen(oam_mem, coin.currentScore);
 				sprite.pos_x = 50;
 				sprite.pos_y = 30;

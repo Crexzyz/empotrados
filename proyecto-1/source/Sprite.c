@@ -214,13 +214,15 @@ void sprite_update_xy_collision(Sprite * sprite, Rect ** rects, size_t rects_amo
     }
     
 
-    sprite->pos_x += sprite->speed_x;
-    // Right horizontal limit
-    sprite->pos_x = MIN(240-16, sprite->pos_x);
-    // Left horizontal limit
-    sprite->pos_x = MAX(0, sprite->pos_x);
-
-    // // Move the sprite up or down
+    // Teleport player to the other side if out of bounds
+    if(sprite->pos_x + sprite->speed_x > 240)
+        sprite->pos_x = 0;
+    else if (sprite->pos_x + sprite->speed_x < 0)
+        sprite->pos_x = 240;
+    else
+        sprite->pos_x += sprite->speed_x;
+        
+    // Move the sprite up or down
     sprite->pos_y += sprite->speed_y;
 }
 

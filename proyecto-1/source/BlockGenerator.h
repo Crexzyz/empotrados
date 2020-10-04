@@ -19,15 +19,17 @@ typedef struct _BlockGenerator
     u8 frame_interval;
     // Frame counter for the interval
     u8 frame_counter;
+    // To prevent blocks getting placed on one side of the map always
+    u8 previous_direction_counter;
+    // Last placed block's direction
+    u8 previous_direction;
 
 } BlockGenerator;
 
 void blockgen_init(BlockGenerator * blockgen);
 void blockgen_set_map(BlockGenerator * blockgen, Map * map);
 void blockgen_set_blocks(BlockGenerator * blockgen, Rect ** blocks);
-Rect * blockgen_get_block(BlockGenerator * blockgen, u32 block);
-Rect * blockgen_get_bottom_block(BlockGenerator * blockgen);
-void blockgen_move_blocks_with_map(BlockGenerator * blockgen);
+Rect * blockgen_get_block(BlockGenerator * blockgen, size_t block);
 // Returns 1 if a scroll was performed, 0 otherwise
 int blockgen_autoscroll(BlockGenerator * blockgen);
 // Repositions a block that reached the end of the screen
