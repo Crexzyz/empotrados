@@ -23,7 +23,7 @@ typedef struct
 void pat_bounce(PATTERN *pat);
 void title_init(PATTERN* pats, OBJ_ATTR *oe);
 void print_instructions(OBJ_ATTR *oe);
-void final_screen(OBJ_ATTR *oam, int currentScore);
+void final_screen(OBJ_ATTR *oam, int currentScore, u32 sprites_amount);
 
 
 #endif

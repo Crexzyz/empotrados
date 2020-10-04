@@ -4,8 +4,7 @@
 #include "Rect.h"
 #include "Map.h"
 
-#define MAX_BLOCKS 4
-#define OBJ_BUFFER_BASE_INDEX 1
+#define OBJ_BUFFER_BASE_INDEX 2
 #define BLOCKS_AMOUNT 8
 
 #define BLOCKGEN_GET_BLOCK(block) (&blockgen->blocks[block])
@@ -29,16 +28,19 @@ typedef struct _BlockGenerator
 
 } BlockGenerator;
 
-// Restrict access to the BlockGenerator file
-static Rect blocks[BLOCKS_AMOUNT];
-
 // Initializes pointers and values with a zero
 void blockgen_init(BlockGenerator * blockgen, OBJ_ATTR * obj_buffer);
 // Initializes the array of blocks with zeroes
 void blockgen_init_blocks(BlockGenerator * blockgen);
 // Returns 1 if a scroll was performed, 0 otherwise
 int blockgen_autoscroll(BlockGenerator * blockgen);
-// Repositions a block that reached the end of the screen
-void blockgen_reposition(BlockGenerator * blockgen, Rect * block );
+// Repositions blocks that reached the end of the screen (4 blocks on screen)
+void blockgen_reposition4(BlockGenerator * blockgen, Rect * block );
+// Repositions blocks that reached the end of the screen (8 blocks on screen)
+void blockgen_reposition8(BlockGenerator * blockgen, Rect * target, size_t block );
+// Gets the rect at the top when there are 8 blocks on screen (4 on each half of the screen)
+Rect * blockgen_get_topmost_block8(BlockGenerator * blockgen, u8 block);
+// Gets the rect at the top when there are 4 blocks on screen (placed randomly)
+Rect * blockgen_get_topmost_block4(BlockGenerator * blockgen);
 
 #endif

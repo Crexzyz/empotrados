@@ -58,9 +58,10 @@ void print_instructions(OBJ_ATTR *oe){
 	tte_write("#{P:5, 120} Presione A para continuar");
 }
 
-void final_screen(OBJ_ATTR *oam, int currentScore){
+void final_screen(OBJ_ATTR *oam, int currentScore, u32 sprites_amount)
+{
     char totalScore[100]; 
-    oam_copy(oam, 0, 6);
+    oam_copy(oam, 0, sprites_amount);
 	tte_write("#{es}");
 	tte_write("#{P:65, 40} Fin del Juego");
     snprintf(totalScore, 100, "#{P:70, 80} Su puntaje es:%d", currentScore);

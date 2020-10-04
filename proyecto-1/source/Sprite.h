@@ -17,15 +17,24 @@
 typedef struct Sprite
 {
 	OBJ_ATTR * sprite_attrs;
+	// Boolean
 	int facing_right;
+	// First frame of the animation, depending on the state
 	int first_anim_frame;
+	// Current frame of the animation
 	int anim_frame;
+	// X Coordinate
 	int pos_x;
+	// Y Coordinate
 	int pos_y;
+	// Speed at what the player moves horizontally in one frame
 	int speed_x;
+	// Speed at what the player moves vertically in one frame
 	int speed_y;
+	// Counter
 	int frames_in_air;
-	int jumps; // Pixels needed to put another coin
+	// Pixels needed to put another coin
+	int jumps; 
 } Sprite;
 
 enum SpriteFrames 
@@ -52,5 +61,7 @@ void sprite_update_x_pos(Sprite * sprite);
 void sprite_update_y_pos(Sprite * sprite);
 void sprite_change_animation(Sprite * sprite);
 int sprite_get_state(Sprite * sprite);
+// Places a sprite on top of a rect
+void sprite_place_on_rect(Sprite * sprite, Rect * rect);
 
 #endif

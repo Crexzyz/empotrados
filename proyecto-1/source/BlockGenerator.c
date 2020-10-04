@@ -1,10 +1,13 @@
 #include "BlockGenerator.h"
 #include <tonc.h>
 
+// Restrict access to the BlockGenerator file
+static Rect blocks[BLOCKS_AMOUNT];
+
 void blockgen_init(BlockGenerator * blockgen, OBJ_ATTR * obj_buffer)
 {
     blockgen->obj_buffer = obj_buffer;
-    blockgen->blocks = &blocks;
+    blockgen->blocks = (Rect *)&blocks;
     blockgen->autoscrolling_speed = 1;
     blockgen->frame_interval = 2;
     blockgen->frame_counter = 0;
@@ -49,7 +52,7 @@ int blockgen_autoscroll(BlockGenerator * blockgen)
             Rect * rect = BLOCKGEN_GET_BLOCK(block);
 
             if(rect->y1 > 160)
-                blockgen_reposition(blockgen, rect);
+                blockgen_reposition8(blockgen, rect, block);
             else
                 rect_set_coords16(rect, rect->x1, rect->y1 + blockgen->autoscrolling_speed);
         }
@@ -60,20 +63,46 @@ int blockgen_autoscroll(BlockGenerator * blockgen)
     return 0;
 }
 
-void blockgen_reposition(BlockGenerator * blockgen, Rect * target )
+Rect * blockgen_get_topmost_block8(BlockGenerator * blockgen, u8 current_block)
 {
     // Lowest Y is 160
-    u8 highest_x = 0;
     u8 highest_y = 160;
+    u8 highest_block_index = 0;
+    // Check only the blocks that are on the same side of the screen
+    for(size_t block = current_block % 2; block < BLOCKS_AMOUNT; block += 2)
+    {
+        if(BLOCKGEN_GET_BLOCK(block)->y1 < highest_y)
+        {
+            highest_block_index = block;
+            highest_y = BLOCKGEN_GET_BLOCK(block)->y1;
+        }
+    }
+
+    return &blockgen->blocks[highest_block_index];
+}
+
+Rect * blockgen_get_topmost_block4(BlockGenerator * blockgen)
+{
+    // Lowest Y is 160
+    u8 highest_y = 160;
+
+    u8 highest_block_index = 0;
     // Get X coordinate from the highest block
     for(size_t block = 0; block < BLOCKS_AMOUNT; ++block)
     {
         if(BLOCKGEN_GET_BLOCK(block)->y1 < highest_y)
         {
             highest_y = BLOCKGEN_GET_BLOCK(block)->y1;
-            highest_x = BLOCKGEN_GET_BLOCK(block)->x1;
+            highest_block_index = block;
         }
     }
+
+    return &blockgen->blocks[highest_block_index];
+}
+
+void blockgen_reposition4(BlockGenerator * blockgen, Rect * target )
+{
+    u8 highest_x = blockgen_get_topmost_block4(blockgen)->x1;
 
     // Randomly choose if next block comes at the left or the right
     // of the highest one
@@ -102,6 +131,28 @@ void blockgen_reposition(BlockGenerator * blockgen, Rect * target )
         new_pos_x = qran_range(highest_x + 40, MIN(highest_x + 80, 220));
     }
 
+
+    rect_set_coords16(target, new_pos_x, 0);
+}
+
+void blockgen_reposition8(BlockGenerator * blockgen, Rect * target, size_t block )
+{
+    u8 new_pos_x = 0;
+    u8 highest_x = blockgen_get_topmost_block8(blockgen, (u8)block)->x1;
+
+     // If the block is the one on the left
+    if(block % 2 == 0)
+    {
+        new_pos_x = qran_range(0, 100);
+        if( highest_x-8 < new_pos_x && new_pos_x < highest_x + 15)
+            new_pos_x = highest_x + 16;
+    }
+    else
+    {
+        new_pos_x = qran_range(120, 220);
+        if( highest_x < new_pos_x - 8 && new_pos_x < highest_x + 15)
+            new_pos_x = highest_x - 16;
+    }
 
     rect_set_coords16(target, new_pos_x, 0);
 }

@@ -217,13 +217,19 @@ void sprite_update_xy_collision(Sprite * sprite, Rect ** rects, size_t rects_amo
     // Teleport player to the other side if out of bounds
     if(sprite->pos_x + sprite->speed_x > 240)
         sprite->pos_x = 0;
-    else if (sprite->pos_x + sprite->speed_x < 0)
+    else if (sprite->pos_x + 15 + sprite->speed_x < 0)
         sprite->pos_x = 240;
     else
         sprite->pos_x += sprite->speed_x;
         
     // Move the sprite up or down
     sprite->pos_y += sprite->speed_y;
+}
+
+void sprite_place_on_rect(Sprite * sprite, Rect * rect)
+{
+    sprite->pos_x = rect->x1;
+    sprite->pos_y = rect->y1-16;
 }
 
 // Play a note

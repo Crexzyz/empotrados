@@ -18,6 +18,9 @@ u8 txt_scrolly= 8;
 
 int main()
 {
+	// Player + coin + blocks
+	const u32 SPRITES_AMOUNT = 1 + 1 + BLOCKS_AMOUNT; 
+
     // Initialize maxmod with default settings
     // pass soundbank address, and allocate 8 channels.
     mmInitDefault( (mm_addr) soundbank_bin, 8 );
@@ -44,14 +47,14 @@ int main()
 	Sprite sprite;
 	sprite_init(&sprite, &obj_buffer[0]);
 
+	Coin coin;
+	sprite_coin_init(&coin, &obj_buffer[1]);
+
 	BlockGenerator bgen;
 	blockgen_init(&bgen, obj_buffer);
 	blockgen_init_blocks(&bgen);
-
-	Coin coin;
-	sprite_coin_init(&coin, &obj_buffer[OBJ_BUFFER_BASE_INDEX + BLOCKS_AMOUNT]);
-
-	sprite.pos_x = 30; sprite.pos_y = 120;
+	
+	sprite_place_on_rect(&sprite, blockgen_get_topmost_block8(&bgen, 0));
 
 	Map map;
 	map_init(&map);
@@ -70,27 +73,23 @@ int main()
 	{
 		VBlankIntrWait();
 		mmFrame();
-
 		key_poll();
-		for(ii=0; ii<HWLEN; ii++){
-        	pat_bounce(&pats[ii]);
-        	oe[ii].attr0 &= ~ATTR0_Y_MASK;
-       		oe[ii].attr0 |= (pats[ii].fy>>8)& ATTR0_Y_MASK;
-        }		
-
-		if(key_hit(KEY_START)){	
-			print_instructions(oe);
-		}
-
-		if(key_hit(KEY_A)){
-			oam_copy(oe, 0, 12);
-			start=1;
-		}
-
-		if(key_hit(KEY_SELECT))
+		if(!start)
 		{
-			sprite.pos_x = 50;
-			sprite.pos_y = 30;
+			for(ii=0; ii<HWLEN; ii++){
+				pat_bounce(&pats[ii]);
+				oe[ii].attr0 &= ~ATTR0_Y_MASK;
+				oe[ii].attr0 |= (pats[ii].fy>>8)& ATTR0_Y_MASK;
+			}		
+
+			if(key_hit(KEY_START)){	
+				print_instructions(oe);
+			}
+
+			if(key_hit(KEY_A)){
+				oam_copy(oe, 0, 12);
+				start=1;
+			}
 		}
 
 		if(start){
@@ -119,15 +118,16 @@ int main()
 			sprite_coin_unhide(&coin, &sprite);
 
 			// Move the sprites to VRAM. Player + coin + blocks
-			oam_copy(oam_mem, obj_buffer, 1 + 1 + BLOCKS_AMOUNT);
+			oam_copy(oam_mem, obj_buffer, SPRITES_AMOUNT);
 		}
 
-		if(coin.currentScore==3 || sprite.pos_y > 160){
-				final_screen(oam_mem, coin.currentScore);
-				sprite.pos_x = 50;
-				sprite.pos_y = 30;
-				coin.currentScore=0;
-				start=0;
+		if(coin.currentScore==3 || sprite.pos_y > 160)
+		{
+			final_screen(oam_mem, coin.currentScore, SPRITES_AMOUNT);
+			sprite_place_on_rect(&sprite, blockgen_get_topmost_block8(&bgen, 0));
+			
+			coin.currentScore=0;
+			start=0;
 		}
 	}
 	return 0;
