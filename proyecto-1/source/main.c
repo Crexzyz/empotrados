@@ -44,8 +44,12 @@ int main()
 	Sprite sprite;
 	sprite_init(&sprite, &obj_buffer[0]);
 
+	BlockGenerator bgen;
+	blockgen_init(&bgen, obj_buffer);
+	blockgen_init_blocks(&bgen);
+
 	Coin coin;
-	sprite_coin_init(&coin, &obj_buffer[5]);
+	sprite_coin_init(&coin, &obj_buffer[OBJ_BUFFER_BASE_INDEX + BLOCKS_AMOUNT]);
 
 	sprite.pos_x = 30; sprite.pos_y = 120;
 
@@ -53,40 +57,8 @@ int main()
 	map_init(&map);
 	map_set_scroll(&map, 0, 0);
 	
-	Rect r1;
-	rect_init(&r1);
-	rect_set_sprite(&r1, &obj_buffer[1]);
-	rect_set_coords16(&r1, 30, 150);
-
-	Rect r2;
-	rect_init(&r2);
-	rect_set_sprite(&r2, &obj_buffer[2]);
-	rect_set_coords16(&r2, 90, 110);
-
-	Rect r3;
-	rect_init(&r3);
-	rect_set_sprite(&r3, &obj_buffer[3]);
-	rect_set_coords16(&r3, 140, 70);
-
-	Rect r4;
-	rect_init(&r4);
-	rect_set_sprite(&r4, &obj_buffer[4]);
-	rect_set_coords16(&r4, 200, 30);
-
 	// char to put in screen
 	char totalScore[100]; 
-
-	// User sprite does not go here
-	Rect * rects[MAX_BLOCKS];
-	rects[0] = &r1;
-	rects[1] = &r2;
-	rects[2] = &r3;
-	rects[3] = &r4;
-
-	BlockGenerator bgen;
-	blockgen_init(&bgen);
-	blockgen_set_blocks(&bgen, (Rect**)(&rects));
-	blockgen_set_map(&bgen, &map);
 
 	initial_sound();
 
@@ -125,13 +97,14 @@ int main()
 			tte_write("#{es}");
 			map_load_to_mem();
 
-			for(int i = 0; i < MAX_BLOCKS; ++i)
-				rect_paint(rects[i]);
+			for(int i = 0; i < BLOCKS_AMOUNT; ++i)
+				rect_paint(&bgen.blocks[i]);
 
 			int do_scroll = blockgen_autoscroll(&bgen);
 			if(do_scroll) sprite.pos_y += 1;
 
-			sprite_update_pos_collision(&sprite, (Rect**)(&rects), MAX_BLOCKS);
+			Rect * rects = bgen.blocks;
+			sprite_update_pos_collision(&sprite, &rects, BLOCKS_AMOUNT);
 			sprite_change_animation(&sprite);
 
 			// Change coin animation
@@ -145,8 +118,8 @@ int main()
 			}
 			sprite_coin_unhide(&coin, &sprite);
 
-			// Move the sprites to VRAM
-			oam_copy(oam_mem, obj_buffer, 6);
+			// Move the sprites to VRAM. Player + coin + blocks
+			oam_copy(oam_mem, obj_buffer, 1 + 1 + BLOCKS_AMOUNT);
 		}
 
 		if(coin.currentScore==3 || sprite.pos_y > 160){

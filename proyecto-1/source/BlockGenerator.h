@@ -5,14 +5,17 @@
 #include "Map.h"
 
 #define MAX_BLOCKS 4
+#define OBJ_BUFFER_BASE_INDEX 1
+#define BLOCKS_AMOUNT 8
+
+#define BLOCKGEN_GET_BLOCK(block) (&blockgen->blocks[block])
 
 typedef struct _BlockGenerator
 {
-    Rect * r1;
-    Rect * r2;
-    Rect * r3;
-    Rect * r4;
-    Map * map;
+    // Sprite buffer used tp set the sprites
+    OBJ_ATTR * obj_buffer;
+    // Array of BLOCKS_AMOUNT blocks that gets displayed on screen
+    Rect * blocks;
     // Pixels that blocks will move on each interval
     u8 autoscrolling_speed;
     // Frames that have to pass between each scroll
@@ -26,10 +29,13 @@ typedef struct _BlockGenerator
 
 } BlockGenerator;
 
-void blockgen_init(BlockGenerator * blockgen);
-void blockgen_set_map(BlockGenerator * blockgen, Map * map);
-void blockgen_set_blocks(BlockGenerator * blockgen, Rect ** blocks);
-Rect * blockgen_get_block(BlockGenerator * blockgen, size_t block);
+// Restrict access to the BlockGenerator file
+static Rect blocks[BLOCKS_AMOUNT];
+
+// Initializes pointers and values with a zero
+void blockgen_init(BlockGenerator * blockgen, OBJ_ATTR * obj_buffer);
+// Initializes the array of blocks with zeroes
+void blockgen_init_blocks(BlockGenerator * blockgen);
 // Returns 1 if a scroll was performed, 0 otherwise
 int blockgen_autoscroll(BlockGenerator * blockgen);
 // Repositions a block that reached the end of the screen
