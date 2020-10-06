@@ -3,7 +3,6 @@
 
 #include <tonc.h>
 
-#include "Map.h"
 #include "Rect.h"
 
 #define SPRITE_8PIXEL_OFFSET(state) (8 * state)

@@ -2,7 +2,6 @@
 #define BLOCK_GENERATOR_H
 
 #include "Rect.h"
-#include "Map.h"
 
 #define OBJ_BUFFER_BASE_INDEX 2
 #define BLOCKS_AMOUNT 8

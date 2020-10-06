@@ -1,33 +1,47 @@
 #include <tonc.h>
+#include <stdio.h>
 
 #include "Sprite.h"
-#include "Map.h"
 #include "Rect.h"
 #include "Menu.h"
 #include "BlockGenerator.h"
 #include "CoinTile.h"
 #include "music.h"
-
+#include "twoCloud.h"
+#include "win.h"
+#include "init.h"
 #include "soundbank.h"
 #include "soundbank_bin.h"
+
+typedef unsigned short     uint16;
+#define REG_BG1_SCROLL_H       *((volatile uint16*)(0x04000014))
+#define REG_BG1_SCROLL_V       *((volatile uint16*)(0x04000016))
 
 // 128-sprite buffer
 OBJ_ATTR obj_buffer[128];
 // sound
 u8 txt_scrolly= 8;
 
+#define twoCloudgrayPalLen 256
+const unsigned char twoCloudgrayPal[256] __attribute__((aligned(4)))=
+{0x10,0x42,0x73,0x4E,0xB5,0x56};
+
 int main()
 {
 	// Player + coin + blocks
 	const u32 SPRITES_AMOUNT = 1 + 1 + BLOCKS_AMOUNT; 
-
-    // Initialize maxmod with default settings
+	// Load first background
+	dma3_cpy(pal_bg_mem, initPal, initPalLen);
+    dma3_cpy(tile_mem[0], initTiles, initTilesLen);
+    dma3_cpy(se_mem[30], initMap, initMapLen);
+    
+	// Initialize maxmod with default settings
     // pass soundbank address, and allocate 8 channels.
     mmInitDefault( (mm_addr) soundbank_bin, 8 );
 	sprite_load_to_mem();
-	
+
 	REG_BG1CNT = BG_CBB(0) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;
-    REG_DISPCNT = DCNT_OBJ | DCNT_OBJ_1D | DCNT_MODE0 | DCNT_BG0 | DCNT_BG1;
+    REG_DISPCNT = DCNT_OBJ | DCNT_OBJ_1D | DCNT_MODE0 | DCNT_BG0 | DCNT_BG1;// | DCNT_BG2;
 	tte_init_se_default(0, BG_CBB(1) | BG_SBB(31));
 
     irq_init(NULL);
@@ -55,10 +69,6 @@ int main()
 	blockgen_init_blocks(&bgen);
 	
 	sprite_place_on_rect(&sprite, blockgen_get_topmost_block8(&bgen, 0));
-
-	Map map;
-	map_init(&map);
-	map_set_scroll(&map, 0, 0);
 	
 	// char to put in screen
 	char totalScore[100]; 
@@ -67,15 +77,23 @@ int main()
 
 	int start = 0;
 	int ii= 0;
+	int hScroll = 0;
+	int h2Scroll = 0;
+	int win=0;
 	sound_setting();
-	map_load_to_mem();
+
 	while(1)
 	{
 		VBlankIntrWait();
 		mmFrame();
 		key_poll();
+
 		if(!start)
 		{
+			if(win){
+				REG_BG1_SCROLL_H = hScroll;
+				hScroll +=1;
+			}
 			for(ii=0; ii<HWLEN; ii++){
 				pat_bounce(&pats[ii]);
 				oe[ii].attr0 &= ~ATTR0_Y_MASK;
@@ -94,11 +112,15 @@ int main()
 
 		if(start){
 			tte_write("#{es}");
-			map_load_to_mem();
 
 			for(int i = 0; i < BLOCKS_AMOUNT; ++i)
 				rect_paint(&bgen.blocks[i]);
 
+			// Load game background
+			dma3_cpy(pal_bg_mem, twoCloudPal, twoCloudPalLen);
+			dma3_cpy(tile_mem[0], twoCloudTiles, twoCloudTilesLen);
+			dma3_cpy(se_mem[30], twoCloudMap, twoCloudMapLen);
+	
 			int do_scroll = blockgen_autoscroll(&bgen);
 			if(do_scroll) sprite.pos_y += 1;
 
@@ -119,16 +141,45 @@ int main()
 
 			// Move the sprites to VRAM. Player + coin + blocks
 			oam_copy(oam_mem, obj_buffer, SPRITES_AMOUNT);
+			
+			// Move background vertical
+		    REG_BG1_SCROLL_V = h2Scroll;
+			hScroll -=1;
+			h2Scroll = hScroll/5;
+
 		}
 
-		if(coin.currentScore==3 || sprite.pos_y > 160)
+		if(coin.currentScore==3)
 		{
 			final_screen(oam_mem, coin.currentScore, SPRITES_AMOUNT);
 			sprite_place_on_rect(&sprite, blockgen_get_topmost_block8(&bgen, 0));
 			
 			coin.currentScore=0;
 			start=0;
+
+			REG_BG1_SCROLL_V = 0;
+			REG_BG1_SCROLL_H = 0;
+			hScroll = 0;
+			h2Scroll = 0;
+			win=1;
+			dma3_cpy(pal_bg_mem, winPal, winPalLen);
+			dma3_cpy(tile_mem[0], winTiles, winTilesLen);
+			dma3_cpy(se_mem[30], winMap, winMapLen);
+
 		}
+		else if(sprite.pos_y > 160)
+		{
+			final_screen(oam_mem, coin.currentScore, SPRITES_AMOUNT);
+			sprite_place_on_rect(&sprite, blockgen_get_topmost_block8(&bgen, 0));
+			
+			coin.currentScore=0;
+			start=0;
+			win = 0;
+			// Change palette
+			dma3_cpy(pal_bg_mem, twoCloudgrayPal, twoCloudgrayPalLen);
+
+		}
+			
 	}
 	return 0;
 }
