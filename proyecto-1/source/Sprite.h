@@ -55,7 +55,6 @@ void sprite_update_x_pos_speed(Sprite * sprite);
 void sprite_update_y_pos_speed(Sprite * sprite);
 void sprite_update_xy_collision(Sprite * sprite, Rect ** rects, size_t rects_amount);
 void sprite_update_position(Sprite * sprite);
-void note_play(int note, int octave);
 void sprite_update_x_pos(Sprite * sprite);
 void sprite_update_y_pos(Sprite * sprite);
 void sprite_change_animation(Sprite * sprite);

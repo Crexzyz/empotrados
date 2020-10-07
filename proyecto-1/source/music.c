@@ -8,7 +8,7 @@ void initial_song()
 	int ii;
 	for(ii=0; ii<6; ii++)
 	{
-		note_play(notes[ii]&15, notes[ii]>>4);
+		music_note_play(notes[ii]&15, notes[ii]>>4);
 		VBlankIntrDelay(8*lens[ii]);
 	}
 }
@@ -49,9 +49,14 @@ void sound_setting()
 	mmStart( MOD_FLATOUTLIES, MM_PLAY_LOOP );
 
     // sound effect handle (for cancelling it later)
-	mm_sfxhand amb = 0;
+	// mm_sfxhand amb = 0;
 }
 
+// Play a note
+void music_note_play(int note, int octave)
+{
+	REG_SND1FREQ = SFREQ_RESET | SND_RATE(note, octave);
+}
 
 // void effects()
 // {
