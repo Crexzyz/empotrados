@@ -144,13 +144,13 @@ void blockgen_reposition8(BlockGenerator * blockgen, Rect * target, size_t block
     if(block % 2 == 0)
     {
         new_pos_x = qran_range(0, 100);
-        if( highest_x-8 < new_pos_x && new_pos_x < highest_x + 15)
+        if( highest_x - 8 < new_pos_x && new_pos_x < highest_x + 15)
             new_pos_x = highest_x + 16;
     }
     else
     {
         new_pos_x = qran_range(120, 220);
-        if( highest_x < new_pos_x - 8 && new_pos_x < highest_x + 15)
+        if( highest_x - 8 < new_pos_x && new_pos_x < highest_x + 15)
             new_pos_x = highest_x - 16;
     }
 
