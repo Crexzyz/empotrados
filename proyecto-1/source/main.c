@@ -106,6 +106,7 @@ int main()
 
 			if(key_hit(KEY_A)){
 				oam_copy(oe, 0, 12);
+				sprite_coin_init(&coin, &obj_buffer[1]);
 				start=1;
 			}
 		}
@@ -153,8 +154,8 @@ int main()
 		{
 			final_screen(oam_mem, coin.currentScore, SPRITES_AMOUNT);
 			sprite_place_on_rect(&sprite, blockgen_get_topmost_block8(&bgen, 0));
-			
-			coin.currentScore=0;
+			sprite_coin_init_with_colis(&coin, &obj_buffer[1],&sprite);
+			sprite.jumps = 0;
 			start=0;
 
 			REG_BG1_SCROLL_V = 0;
@@ -171,15 +172,13 @@ int main()
 		{
 			final_screen(oam_mem, coin.currentScore, SPRITES_AMOUNT);
 			sprite_place_on_rect(&sprite, blockgen_get_topmost_block8(&bgen, 0));
-			
-			coin.currentScore=0;
+			sprite_coin_init_with_colis(&coin, &obj_buffer[1],&sprite);
+			sprite.jumps = 0;
 			start=0;
 			win = 0;
 			// Change palette
 			dma3_cpy(pal_bg_mem, twoCloudgrayPal, twoCloudgrayPalLen);
-
 		}
-			
 	}
 	return 0;
 }

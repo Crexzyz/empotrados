@@ -22,15 +22,13 @@ typedef struct Coin
 
 void sprite_coin_load_to_mem();
 void sprite_coin_init(Coin* sprite_coin, OBJ_ATTR * attribs);
+void sprite_coin_init_with_colis(Coin* sprite_coin, OBJ_ATTR * attribs, Sprite* sprite);
 void sprite_coin_paint(Coin* sprite_coin);
 void sprite_coin_update_pos(Coin* sprite_coin);
 void sprite_coin_update_y_pos(Coin* sprite_coin);
 void sprite_coin_change_animation(Coin* sprite_coin);
-
-// Return true or false if there is a collision
 int do_sprites_collisions(Coin* sprite_coin, Sprite * sprite);
-
-// Verify if the count of pixels is the needed to put another coin
-int sprite_coin_unhide(Coin* sprite_coin, Sprite * sprite);
+int sprite_coin_unhide(Coin* jumps, Sprite * sprite);
+void sprite_coin_check_pos(Coin* sprite_coin, Sprite* sprite);
 
 #endif
