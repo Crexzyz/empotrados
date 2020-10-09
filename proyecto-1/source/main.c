@@ -98,12 +98,13 @@ int main()
 				pat_bounce(&pats[ii]);
 				oe[ii].attr0 &= ~ATTR0_Y_MASK;
 				oe[ii].attr0 |= (pats[ii].fy>>8)& ATTR0_Y_MASK;
-			}		
+			}
 
+			// Skip start screen and print instructions
 			if(key_hit(KEY_START)){	
 				print_instructions(oe);
 			}
-
+			// Start Game
 			if(key_hit(KEY_A)){
 				oam_copy(oe, 0, 12);
 				sprite_coin_init(&coin, &obj_buffer[1]);
@@ -152,6 +153,7 @@ int main()
 
 		if(coin.currentScore==3)
 		{
+			// Sets the end game screen to be shown in this case game won
 			final_screen(oam_mem, coin.currentScore, SPRITES_AMOUNT);
 			sprite_place_on_rect(&sprite, blockgen_get_topmost_block8(&bgen, 0));
 			sprite_coin_init_with_colis(&coin, &obj_buffer[1],&sprite);
@@ -170,6 +172,7 @@ int main()
 		}
 		else if(sprite.pos_y > 160)
 		{
+			// Sets the end game screen to be shown in this case game lost
 			final_screen(oam_mem, coin.currentScore, SPRITES_AMOUNT);
 			sprite_place_on_rect(&sprite, blockgen_get_topmost_block8(&bgen, 0));
 			sprite_coin_init_with_colis(&coin, &obj_buffer[1],&sprite);

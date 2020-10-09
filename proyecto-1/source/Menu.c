@@ -1,5 +1,6 @@
 #include "Menu.h"
 
+// Function that makes the bounce of the letters in the tittle screen
 void pat_bounce(PATTERN *pat)
 {
     if(pat->tt <= 0)    // timer's run out: play pattern
@@ -27,7 +28,7 @@ void pat_bounce(PATTERN *pat)
     else    // still in waiting period
         pat->tt--;
 }
-
+// Function that sets the tittle screen of the game
 void title_init(PATTERN* pats, OBJ_ATTR *oe){
     txt_init_obj(&oam_mem[0], 0xF200, CLR_YELLOW, 0xEE);
     obj_puts2(120-12*HWLEN/2, 8, tittle, 0xF200, oe);
@@ -48,7 +49,7 @@ void title_init(PATTERN* pats, OBJ_ATTR *oe){
     tte_write("#{P:60, 110} Presione Start");
 
 }
-
+// Function that sets the instructions screen
 void print_instructions(OBJ_ATTR *oe){
     oam_copy(oe, 0, 12);
 	tte_write("#{es}");
@@ -57,7 +58,7 @@ void print_instructions(OBJ_ATTR *oe){
 	tte_write("#{P:5, 90} Suerte");
 	tte_write("#{P:5, 120} Presione A para continuar");
 }
-
+// Function that sets the end game screen
 void final_screen(OBJ_ATTR *oam, int currentScore, u32 sprites_amount)
 {
     char totalScore[100]; 
