@@ -42,18 +42,6 @@ int rect_intersects_x(Rect * rect1, Rect * rect2)
     return (rect1->x1 < rect2->x2 && rect1->x2 > rect2->x1);
 }
 
-// refactor later
-void rect_paint_offset(Rect * rect, u32 x, u32 y)
-{
-    rect->sprite_attrs->attr2= ATTR2_BUILD(SPRITE_8PIXEL_OFFSET(9), 0, 0); 
-    // Set the sprite the 8 bits per pixel and square sprite bits
-	rect->sprite_attrs->attr0 = ATTR0_8BPP | ATTR0_SQUARE ;
-    // Set the sprite as a 16x16 pixel sprite
-	rect->sprite_attrs->attr1 = ATTR1_SIZE_16;
-    // Draw the sprite
-	obj_set_pos(rect->sprite_attrs, rect->x1 + x, rect->y1 + y);
-}
-
 void rect_paint(Rect * rect)
 {
     rect->sprite_attrs->attr2= ATTR2_BUILD(SPRITE_8PIXEL_OFFSET(9), 0, 0); 
