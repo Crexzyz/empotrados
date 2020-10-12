@@ -54,7 +54,7 @@ void print_instructions(OBJ_ATTR *oe){
     oam_copy(oe, 0, 12);
 	tte_write("#{es}");
 	tte_write("#{P:5, 30} Utilice las flechas \n para moverse");
-	tte_write("#{P:5, 60} Obtenga 1 moneda \n para ganar el juego");
+	tte_write("#{P:5, 60} Obtenga 3 monedas \n para ganar el juego");
 	tte_write("#{P:5, 90} Suerte");
 	tte_write("#{P:5, 120} Presione A para continuar");
 }

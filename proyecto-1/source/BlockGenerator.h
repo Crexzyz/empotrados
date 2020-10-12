@@ -37,6 +37,8 @@ int blockgen_autoscroll(BlockGenerator * blockgen);
 void blockgen_reposition4(BlockGenerator * blockgen, Rect * block );
 // Repositions blocks that reached the end of the screen (8 blocks on screen)
 void blockgen_reposition8(BlockGenerator * blockgen, Rect * target, size_t block );
+// Gets the rect at the top, starting at a defined block index with a custom pointer increment
+Rect * blockgen_get_topmost_block(BlockGenerator * blockgen, u8 start_index, u8 increment);
 // Gets the rect at the top when there are 8 blocks on screen (4 on each half of the screen)
 Rect * blockgen_get_topmost_block8(BlockGenerator * blockgen, u8 block);
 // Gets the rect at the top when there are 4 blocks on screen (placed randomly)
