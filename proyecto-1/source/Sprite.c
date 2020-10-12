@@ -39,36 +39,6 @@ void sprite_paint(Sprite * sprite)
 	obj_set_pos(sprite->sprite_attrs, sprite->pos_x, sprite->pos_y);
 }
 
-void sprite_update_position(Sprite * sprite)
-{
-    sprite_update_x_pos(sprite);
-    sprite_update_y_pos(sprite);
-    sprite_paint(sprite);
-}
-
-void sprite_update_x_pos(Sprite * sprite)
-{
-    sprite_update_x_pos_speed(sprite);
-
-    sprite->pos_x += sprite->speed_x;
-
-    // Right horizontal limit
-    sprite->pos_x = MIN(240-16, sprite->pos_x);
-    // Left horizontal limit
-    sprite->pos_x = MAX(0, sprite->pos_x);
-}
-
-void sprite_update_y_pos(Sprite * sprite)
-{
-    sprite_update_x_pos_speed(sprite);
-
-    // Move the sprite up or down
-    sprite->pos_y += sprite->speed_y;
-
-    // Give preference to the mid-air position
-    sprite->pos_y = MIN(sprite->pos_y, FLOOR_Y);
-}
-
 void sprite_change_animation(Sprite * sprite)
 {
     if (sprite_get_state(sprite) == JUMPING)
@@ -105,9 +75,12 @@ int sprite_get_state(Sprite * sprite)
 
 void sprite_update_pos_collision(Sprite * sprite, Rect ** rects, size_t rects_amount)
 {
+    // Check the buttons and update the speed values
     sprite_update_x_pos_speed(sprite);
     sprite_update_y_pos_speed(sprite);
+    // Check for collisions
     sprite_update_xy_collision(sprite, rects, rects_amount);
+    // Paint the sprite on screen
     sprite_paint(sprite);
 }
 
@@ -151,6 +124,7 @@ void sprite_update_y_pos_speed(Sprite * sprite)
 
 void sprite_update_xy_collision(Sprite * sprite, Rect ** rects, size_t rects_amount)
 {
+    // Create a square based on the sprite's position
     Rect sprite_rect;
     rect_init(&sprite_rect);
     rect_set_coords16(&sprite_rect, sprite->pos_x, sprite->pos_y);
@@ -158,6 +132,7 @@ void sprite_update_xy_collision(Sprite * sprite, Rect ** rects, size_t rects_amo
     int intersect_exists = 0;
     size_t intersect_rect = 0;
 
+    // Look for the first rect that collides with the sprite and save the index
     for(size_t rect = 0; rect < rects_amount; ++rect)
     {
         if(rect_intersects(&sprite_rect, &(*rects)[rect], sprite->speed_x, sprite->speed_y))
@@ -170,27 +145,30 @@ void sprite_update_xy_collision(Sprite * sprite, Rect ** rects, size_t rects_amo
 
     if(intersect_exists)
     {
+        // Stop the movement on the X coordinate if there is going to be a collision
         if(rect_intersects(&sprite_rect, &(*rects)[intersect_rect], sprite->speed_x, 0))
         {
-            if(sprite->speed_x < 0) // Moving left
+            if(sprite->speed_x < 0) // Moving left, place the sprite on the rect's right
                 sprite->pos_x = (*rects)[intersect_rect].x2+1;
-            else if (sprite->speed_x > 0) // Moving right
+            else if (sprite->speed_x > 0) // Moving right, place the sprite on the rect's left
                 sprite->pos_x = (*rects)[intersect_rect].x1-16;
 
+            // Stop the sprite
             sprite->speed_x = 0;
         }
 
+        // Stop the movement on the Y coordinate if there is going to be a collision
         if(rect_intersects(&sprite_rect, &(*rects)[intersect_rect], 0, sprite->speed_y))
         {
-            if(sprite->speed_y < 0) // Jumping up
+            if(sprite->speed_y < 0) // Jumping up, place the sprite on the rect's bottom
             {
                 sprite->pos_y = (*rects)[intersect_rect].y2+1;
             }
-            else if (sprite->speed_y > 0) // Jumping down
+            else if (sprite->speed_y > 0) // Jumping down, place the sprite on the rect's top
             {
                 sprite->pos_y = (*rects)[intersect_rect].y1-16;
 
-                // Bounce hack
+                // Stop the sprite
                 sprite->speed_y = 0;
                 sprite->frames_in_air = 0;
             } 
@@ -202,7 +180,7 @@ void sprite_update_xy_collision(Sprite * sprite, Rect ** rects, size_t rects_amo
         int above_block = 0;
         for(size_t rect = 0; rect < rects_amount; ++rect)
         {
-            // If above any block in the map
+            // If the sprite is above any block in the map
             if(rect_intersects(&sprite_rect, &(*rects)[rect], 0, 1))
             {
                 above_block = 1;        
@@ -210,6 +188,7 @@ void sprite_update_xy_collision(Sprite * sprite, Rect ** rects, size_t rects_amo
             }
         }
         
+        // Check if the sprite is no more over a block to start making it fall down
         if(!above_block && sprite->speed_y == 0)
             sprite->frames_in_air = (1 - VELOCITY) / ACCELERATION; // 9
     }

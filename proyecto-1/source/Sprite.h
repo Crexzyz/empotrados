@@ -48,16 +48,21 @@ enum SpriteStates
     STILL, MOVING, JUMPING
 };
 
+// memcpyies the sprite data to memory
 void sprite_load_to_mem();
+// Sets 0 to the struct's variables
 void sprite_init(Sprite* sprite, OBJ_ATTR * attribs);
+// Checks if the sprites collides with a set of rects and updates its position if there is any
 void sprite_update_pos_collision(Sprite * sprite, Rect ** rects, size_t rects_amount);
+// Updates the sprite's speed on the X coordinate if a key is pressed
 void sprite_update_x_pos_speed(Sprite * sprite);
+// Updates the sprite's speed on the Y coordinate if a key is pressed
 void sprite_update_y_pos_speed(Sprite * sprite);
+// Checks if the sprites collides with another rect based on the sprite's speed
 void sprite_update_xy_collision(Sprite * sprite, Rect ** rects, size_t rects_amount);
-void sprite_update_position(Sprite * sprite);
-void sprite_update_x_pos(Sprite * sprite);
-void sprite_update_y_pos(Sprite * sprite);
+// Changes the sprite's animation based on its state
 void sprite_change_animation(Sprite * sprite);
+// Returns an enum value if the sprite is still, moving or jumping
 int sprite_get_state(Sprite * sprite);
 // Places a sprite on top of a rect
 void sprite_place_on_rect(Sprite * sprite, Rect * rect);
