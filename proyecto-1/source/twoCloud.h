@@ -27,6 +27,9 @@ extern const unsigned char twoCloudMap[2048];
 #define twoCloudPalLen 256
 extern const unsigned char twoCloudPal[256];
 
+#define twoCloudgrayPalLen 256
+extern const unsigned char twoCloudgrayPal[256];
+
 #endif // GRIT_TWOCLOUD_H
 
 //}}BLOCK(twoCloud)
