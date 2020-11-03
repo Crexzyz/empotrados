@@ -1,4 +1,5 @@
 #include "music.h"
+#include <tonc.h>
 
 // Play a little ditty
 void initial_song()
@@ -39,8 +40,6 @@ void sound_setting()
 	// Link the VBlank interrupt to mmVBlank, and enable it. 
 	irqSet( IRQ_VBLANK, mmVBlank );
 	irqEnable(IRQ_VBLANK);
-
-	 
 
 	// initialise with soundbank and 8 channels
     mmInitDefault( (mm_addr)soundbank_bin, 8 );

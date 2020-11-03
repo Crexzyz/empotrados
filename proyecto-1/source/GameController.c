@@ -18,67 +18,81 @@ OBJ_ATTR obj_buffer[128];
 // sound
 u8 txt_scrolly= 8;
 
+static Sprite sprite;
+static Coin coin;
+static BlockGenerator bgen;
+static PATTERN pats[HWLEN];
+
 void gamectrl_init_regs()
 {
-
+    REG_BG1CNT = BG_CBB(0) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;
+    REG_DISPCNT = DCNT_OBJ | DCNT_OBJ_1D | DCNT_MODE0 | DCNT_BG0 | DCNT_BG1;
+	tte_init_se_default(0, BG_CBB(1) | BG_SBB(31));
 }
 
-int gamectrl_run()
+void gamectrl_init_interrupts()
 {
-    	// Player + coin + blocks
-	const u32 SPRITES_AMOUNT = 1 + 1 + BLOCKS_AMOUNT; 
+    irq_init(NULL);
+    irq_add(II_VBLANK, NULL);
+}
+
+void gamectrl_init()
+{
+    gamectrl_init_regs();
+    gamectrl_init_interrupts();
+	sprite_load_to_mem();
+
+    // Init sprite buffers
+	oam_init(obj_buffer, 128);
+
+    //init sprite tittle text
+    txt_init_std();
+
 	// Load first background
 	dma3_cpy(pal_bg_mem, initPal, initPalLen);
     dma3_cpy(tile_mem[0], initTiles, initTilesLen);
     dma3_cpy(se_mem[30], initMap, initMapLen);
     
-	// Initialize maxmod with default settings
-    // pass soundbank address, and allocate 8 channels.
-    mmInitDefault( (mm_addr) soundbank_bin, 8 );
-	sprite_load_to_mem();
-
-	REG_BG1CNT = BG_CBB(0) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;
-    REG_DISPCNT = DCNT_OBJ | DCNT_OBJ_1D | DCNT_MODE0 | DCNT_BG0 | DCNT_BG1;// | DCNT_BG2;
-	tte_init_se_default(0, BG_CBB(1) | BG_SBB(31));
-
-    irq_init(NULL);
-    irq_add(II_VBLANK, NULL);
-	oam_init(obj_buffer, 128);
-
-    //init sprite tittle text
-    txt_init_std();
     //12 px between letters
-    gptxt->dx= 12;
-	OBJ_ATTR *oe= oam_mem;
+    gptxt->dx = 12;
+
     //init sprite letter
-	//set tittle propperties
-	PATTERN pats[HWLEN];
-    title_init(pats, oe);
+	//set tittle properties
+    title_init(pats, (OBJ_ATTR *)oam_mem);
 
-	Sprite sprite;
-	sprite_init(&sprite, &obj_buffer[0]);
+    
+}
 
-	Coin coin;
+int gamectrl_run()
+{
+	gamectrl_init();
+
+    sprite_init(&sprite, &obj_buffer[0]);
 	sprite_coin_init(&coin, &obj_buffer[1]);
-
-	BlockGenerator bgen;
 	blockgen_init(&bgen, obj_buffer);
 	blockgen_init_blocks(&bgen);
-	
 	sprite_place_on_rect(&sprite, blockgen_get_topmost_block8(&bgen, 0));
-	
-	// char to put in screen
-	char totalScore[100]; 
 
 	initial_sound();
+    sound_setting();
+
+    gamectrl_start();
+
+    return 0;
+}
+
+void gamectrl_start()
+{
+	// char to put in screen
+	char totalScore[100]; 
 
 	int start = 0;
 	int ii= 0;
 	int hScroll = 0;
 	int h2Scroll = 0;
 	int win=0;
-	sound_setting();
-
+    OBJ_ATTR * oe = (OBJ_ATTR *)oam_mem;
+	
 	while(1)
 	{
 		VBlankIntrWait();
@@ -180,6 +194,4 @@ int gamectrl_run()
 			dma3_cpy(pal_bg_mem, twoCloudgrayPal, twoCloudgrayPalLen);
 		}
 	}
-
-    return 0;
 }
