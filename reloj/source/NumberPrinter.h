@@ -8,7 +8,10 @@
  * @param bg_type The background color
  * @param number The number to lookup
  */
-#define NP_BG_BUILD(bg_type, number) (10 * 8 * bg_type + 8 * number)
+#define NP_BG_BUILD(bg_type, number) (12 * 8 * bg_type + 8 * number)
+
+#define COLON 10
+#define QUESTION_MARK 11
 
 typedef struct _NumberPrinter {
     OBJ_ATTR * sprites;

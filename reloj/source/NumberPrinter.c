@@ -30,10 +30,13 @@ void np_print(NumberPrinter * np, u32 x, u32 y, u8 color, char * numbers, u32 le
         if(num < len)
         {
             obj_unhide((&np->sprites[sprite]), 0);
-
-            u8 real_number = numbers[num] - '0';
-            if(real_number > 9)
-                real_number = 0;
+            u8 real_number = 0;
+            if(numbers[num] == ':')
+                real_number = COLON;
+            else if('0' <= numbers[num] && numbers[num] <= '9')
+                real_number = numbers[num] - '0';
+            else
+                real_number = QUESTION_MARK;
 
             (&np->sprites[sprite])->attr2 = ATTR2_BUILD(NP_BG_BUILD(color, real_number), 0, 0);
             obj_set_pos(&np->sprites[sprite], x, y);
