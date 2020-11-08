@@ -16,6 +16,7 @@
 typedef struct _NumberPrinter {
     OBJ_ATTR * sprites;
     u32 sprite_amount;
+    u8 rainbow_color_index;
 } NumberPrinter;
 
 enum bg_colors {
@@ -47,5 +48,7 @@ void np_init(NumberPrinter * np, OBJ_ATTR * sprites, u32 amount);
  * @see bg_colors for the available background colors
  */
 void np_print(NumberPrinter * np, u32 x, u32 y, u8 color, char * numbers, u32 len);
+
+void np_rainbow_print(NumberPrinter * np, u32 x, u32 y, char * numbers, u32 len);
 
 #endif

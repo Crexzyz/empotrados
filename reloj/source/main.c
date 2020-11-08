@@ -1,27 +1,28 @@
 #include <tonc.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "Nums.h"
 #include "NumberPrinter.h"
 
-#define SPRITE_BUFFER_SIZE 9
+#define SPRITE_BUFFER_SIZE 8 // "00:00:00"
 OBJ_ATTR obj_buffer[128];
-
 
 void test()
 {
 	NumberPrinter np;
 	np_init(&np, &obj_buffer[0], SPRITE_BUFFER_SIZE);
 	char buf[SPRITE_BUFFER_SIZE + 1]; buf[SPRITE_BUFFER_SIZE] = 0; 
-	char tbuf[30];
+	// char tbuf[30];
 
 	u8 color = WHITE;
 
 	while(true)
 	{
-		
-		VBlankIntrWait();
+		for(size_t i = 0; i < 10; ++i)
+			VBlankIntrWait();
+
 		key_poll();
 
 		if(key_hit(KEY_B))
@@ -32,11 +33,11 @@ void test()
 			u16 num = qran_range(0, 61);
 			snprintf(buf, SPRITE_BUFFER_SIZE + 1, "%02d:%02d:%02d", num, num, num);
 			
-			snprintf(tbuf, 30, "#{P:24,10} %s", buf);
-			tte_write(tbuf);
+			// snprintf(tbuf, 30, "#{P:24,10} %s %d", buf, SPRITE_BUFFER_SIZE);
+			// tte_write(tbuf);
 		}
 
-		np_print(&np, 30, 30, color, buf, strnlen(buf, SPRITE_BUFFER_SIZE + 1));
+		np_rainbow_print(&np, 30, 30, buf, strnlen(buf, SPRITE_BUFFER_SIZE + 1));
 		oam_copy(oam_mem, obj_buffer, SPRITE_BUFFER_SIZE);
 	}
 }

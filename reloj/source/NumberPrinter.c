@@ -13,6 +13,7 @@ void np_init(NumberPrinter * np, OBJ_ATTR * sprites, u32 amount)
 {
     np_load();
 
+    np->rainbow_color_index = WHITE;
     np->sprites = sprites;
     np->sprite_amount = amount;
 
@@ -20,6 +21,16 @@ void np_init(NumberPrinter * np, OBJ_ATTR * sprites, u32 amount)
     {
         obj_set_attr(&np->sprites[sprite], ATTR0_SQUARE | ATTR0_8BPP, ATTR1_SIZE_16, ATTR2_PALBANK(0));
     }
+}
+
+u8 char_to_sprite(char character)
+{
+    if(character == ':')
+        return COLON;
+    else if('0' <= character && character <= '9')
+        return character - '0';
+    else
+        return QUESTION_MARK;
 }
 
 void np_print(NumberPrinter * np, u32 x, u32 y, u8 color, char * numbers, u32 len)
@@ -30,13 +41,8 @@ void np_print(NumberPrinter * np, u32 x, u32 y, u8 color, char * numbers, u32 le
         if(num < len)
         {
             obj_unhide((&np->sprites[sprite]), 0);
-            u8 real_number = 0;
-            if(numbers[num] == ':')
-                real_number = COLON;
-            else if('0' <= numbers[num] && numbers[num] <= '9')
-                real_number = numbers[num] - '0';
-            else
-                real_number = QUESTION_MARK;
+
+            u8 real_number = char_to_sprite(numbers[num]);
 
             (&np->sprites[sprite])->attr2 = ATTR2_BUILD(NP_BG_BUILD(color, real_number), 0, 0);
             obj_set_pos(&np->sprites[sprite], x, y);
@@ -50,4 +56,21 @@ void np_print(NumberPrinter * np, u32 x, u32 y, u8 color, char * numbers, u32 le
         }
         
     }
+}
+
+void np_rainbow_print(NumberPrinter * np, u32 x, u32 y, char * numbers, u32 len)
+{
+    u8 color = np->rainbow_color_index;
+
+    for(size_t sprite = 0; sprite < np->sprite_amount; ++sprite)
+    {
+        u8 real_number = sprite < len ? char_to_sprite(numbers[sprite]) : QUESTION_MARK;
+
+        (&np->sprites[sprite])->attr2 = ATTR2_BUILD(NP_BG_BUILD(color, real_number), 0, 0);
+        obj_set_pos(&np->sprites[sprite], x, y);
+
+        x += 16;
+        color = (color + 1) % (YELLOW + 1);
+    }
+    np->rainbow_color_index = (np->rainbow_color_index + 1) % (YELLOW + 1);
 }
