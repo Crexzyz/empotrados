@@ -57,13 +57,8 @@ void test1_click(OptsChser * oc)
 	}
 }
 
-// This method is needed to create the option text "back" but is not used
-void back(){}
-
-
-void test4_click()
-{
-	tte_write("#{es}");
+void test4_click(DispCtrl * dc)
+{	
 	char buf[SPRITE_BUFFER_SIZE + 1]; buf[SPRITE_BUFFER_SIZE] = 0;
 
 	Clock clock;
@@ -73,45 +68,53 @@ void test4_click()
 	OptionText_init(&options[0], "Back", strlen("Back"));
 
 	OptionFunction functions[1];
-	OptFunc_init(&functions[0], back, NULL);
+	OptFunc_init(&functions[0], DispCtrl_back, dc);
 
 	OptsChser oc;
 	OptsChser_init(&oc, options, 1, functions);
 
 	NumberPrinter np;
 	np_init(&np, &obj_buffer[0], SPRITE_BUFFER_SIZE);
-	
-	char * title = "Clock";
-	DispCtrl dc;
-	DispCtrl_init(&dc, title, strlen(title), OptsChser_show, &oc);
 
+	size_t frame_counter = 0;
+	
 	while(true)
 	{
-		for(size_t i = 0; i < 10; ++i)
-			VBlankIntrWait();
-
-		DispCtrl_show(&dc);
-
-		updateClock(&clock);
-		
-		snprintf(buf, SPRITE_BUFFER_SIZE + 1, "%02d:%02d:%02d",
-			clock.hours, clock.minutes, clock.seconds);
-		
-		np_rainbow_print(&np, 50, 30, buf, strnlen(buf, SPRITE_BUFFER_SIZE + 1));
-		oam_copy(oam_mem, obj_buffer, SPRITE_BUFFER_SIZE);
+		VBlankIntrWait();
+		frame_counter = (frame_counter + 1) % 60;
 
 		key_poll();
-		if(key_hit(KEY_START))
+		OptsChser_show(&oc);
+		
+		if(frame_counter % 10 == 0)
 		{
-			oam_copy(oam_mem, 0, SPRITE_BUFFER_SIZE);
-			break;
+			updateClock(&clock);
+			
+			snprintf(buf, SPRITE_BUFFER_SIZE + 1, "%02d:%02d:%02d",
+				clock.hours, clock.minutes, clock.seconds);
+			
+			np_rainbow_print(&np, 50, 30, buf, strnlen(buf, SPRITE_BUFFER_SIZE + 1));
+
+			oam_copy(oam_mem, obj_buffer, SPRITE_BUFFER_SIZE);
 		}
+
+		if(dc->content_change == true)
+			break;
 	}
+
+	oam_copy(oam_mem, 0, SPRITE_BUFFER_SIZE);
+	dc->content_change = false;
 }
 
-void test2_click()
+void test2_click(DispCtrl* dc )
 {
-	tte_write("#{P:100,86} Click 2");
+	// tte_write("#{P:100,86} Click 2");
+
+	OptionFunction function;
+	OptFunc_init(&function, test4_click, dc);
+
+	stack_push(&dc->stack, &function);
+
 }
 
 void test3_click()
@@ -127,18 +130,24 @@ void dispctrl_test()
 	DispCtrl dc;
 	OptionText options[OPTIONS_AMOUNT];
 	OptionFunction functions[OPTIONS_AMOUNT];
+	OptionFunction function_buffer[STACK_MAX_CAPACITY];
+
 	OptionText_init(&options[0], "Test 1", strlen("Test 1"));
 	OptionText_init(&options[1], "Test 2", strlen("Test 2"));
 	OptionText_init(&options[2], "Test 3", strlen("Test 3"));
 
 	OptFunc_init(&functions[0], test1_click, &oc);
-	OptFunc_init(&functions[1], test4_click, NULL);
+	OptFunc_init(&functions[1], test2_click, &dc);
 	OptFunc_init(&functions[2], test3_click, NULL);
 
 	OptsChser_init(&oc, options, OPTIONS_AMOUNT, functions);
 
+	OptionFunction main_function;
+	OptFunc_init(&main_function, OptsChser_show, &oc);
+
 	char * title = "Clock";
-	DispCtrl_init(&dc, title, strlen(title), OptsChser_show, &oc);
+	DispCtrl_init(&dc, title, strlen(title), function_buffer);
+	stack_push(&dc.stack, &main_function);
 
 	while(true)
 	{

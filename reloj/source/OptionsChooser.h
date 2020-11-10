@@ -37,6 +37,9 @@ typedef struct _OptionFunction {
  */
 void OptFunc_init(OptionFunction * of, void (*func), void * data);
 
+#define OPTSCHSER_DEFAULT_X 20 
+#define OPTSCHSER_DEFAULT_Y 70
+
 /**
  * Data and control variables for the options chooser 
  */
@@ -46,6 +49,8 @@ typedef struct _OptsChser {
     u8 current_option;
     OptionFunction * functions;
     bool option_locked;
+    u8 start_x;
+    u8 start_y;
 } OptsChser;
 
 /**
@@ -56,6 +61,14 @@ typedef struct _OptsChser {
  * @param functions The function to call when option[i] is clicked with A
  */
 void OptsChser_init(OptsChser * oc, OptionText * options, u8 size, OptionFunction * functions);
+
+/**
+ * Sets where the options start to get printed
+ * @param oc The previously initialized OptionsChooser struct
+ * @param x The x coordinate
+ * @param y The y coordinate
+ */
+void OptsChser_set_coords(OptsChser * oc, u8 x, u8 y);
 
 /**
  * Listens for key strokes and shows the content in screen 

@@ -2,6 +2,7 @@
 #define DISPLAY_CONTROLLER_H
 
 #include <tonc.h>
+#include "DisplayStack.h"
 
 /**________________________
  * |_________title________|
@@ -21,8 +22,8 @@ typedef struct DisplayController
 {
     char * title;
     u8 title_len;
-    void (*content_function)(void * data);
-    void * function_data;
+    DisplayStack stack;
+    bool content_change;
 } DispCtrl;
 
 /**
@@ -30,10 +31,8 @@ typedef struct DisplayController
  * @param dc The uninitialized controller
  * @param title The display title
  * @param len The display title's length
- * @param content_function The function to call to show some content on screen
- * @param data Optional data that the content function need
  */
-void DispCtrl_init(DispCtrl * dc, char * title, u8 t_len, void (*content_function), void * data);
+void DispCtrl_init(DispCtrl * dc, char * title, u8 t_len, OptionFunction * func_buffer);
 
 /**
  * Shows the title and content of the current screen
@@ -41,5 +40,7 @@ void DispCtrl_init(DispCtrl * dc, char * title, u8 t_len, void (*content_functio
  * @param dc The initialized display controller 
  */
 void DispCtrl_show(DispCtrl * dc);
+
+void DispCtrl_back(DispCtrl * dc);
 
 #endif
