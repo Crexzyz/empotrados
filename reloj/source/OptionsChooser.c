@@ -23,30 +23,38 @@ void OptsChser_init(OptsChser * oc, OptionText * options, u8 size, OptionFunctio
     oc->options_size = size <= OPTS_MAX_SIZE ? size : OPTS_MAX_SIZE;
     oc->current_option = 0;
     oc->functions = functions;
+    oc->option_locked = false;
 }
 
 void OptsChser_show(OptsChser * oc)
 {
-    OptsChser_keypoll(oc);
+    if(oc->option_locked == false)
+    {
+        OptsChser_keypoll(oc);
+        for(size_t i = 0; i < oc->options_size; ++i)
+        {   
+            u16 x = 20;
+            u16 y = 70 + 16 * i;
 
-    for(size_t i = 0; i < oc->options_size; ++i)
-    {   
-        u16 x = 20;
-        u16 y = 70 + 16 * i;
+            if(i == oc->current_option)
+            {
+                // tte_set_color(TTE_INK, CLR_SILVER);
+                snprintf(text_buffer, 300, "#{P:%d,%d} -> %s", x, y, oc->options[i].text);
+            }
+            else
+            {
+                // tte_set_color(TTE_INK, CLR_YELLOW);
+                snprintf(text_buffer, 300, "#{P:%d,%d}    %s", x, y, oc->options[i].text);
+            }
 
-        if(i == oc->current_option)
-        {
-            // tte_set_color(TTE_INK, CLR_SILVER);
-            snprintf(text_buffer, 300, "#{P:%d,%d} -> %s", x, y, oc->options[i].text);
+            tte_write(text_buffer);
         }
-        else
-        {
-            // tte_set_color(TTE_INK, CLR_YELLOW);
-            snprintf(text_buffer, 300, "#{P:%d,%d}    %s", x, y, oc->options[i].text);
-        }
-
-        tte_write(text_buffer);
     }
+    else
+    {
+        (*oc->functions[oc->current_option].func)(oc->functions[oc->current_option].data);
+    }
+    
 }
 
 void OptsChser_keypoll(OptsChser * oc)
@@ -61,6 +69,7 @@ void OptsChser_keypoll(OptsChser * oc)
     }
     else if(key_hit(KEY_A))
     {
+        oc->option_locked = true;
         // Call function(data)
         (*oc->functions[oc->current_option].func)(oc->functions[oc->current_option].data);
     }

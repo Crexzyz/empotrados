@@ -45,6 +45,7 @@ typedef struct _OptsChser {
     OptionText * options;
     u8 current_option;
     OptionFunction * functions;
+    bool option_locked;
 } OptsChser;
 
 /**
