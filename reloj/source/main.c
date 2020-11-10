@@ -63,6 +63,7 @@ void back(){}
 
 void test4_click()
 {
+	tte_write("#{es}");
 	char buf[SPRITE_BUFFER_SIZE + 1]; buf[SPRITE_BUFFER_SIZE] = 0;
 
 	Clock clock;
@@ -131,7 +132,7 @@ void dispctrl_test()
 	OptionText_init(&options[2], "Test 3", strlen("Test 3"));
 
 	OptFunc_init(&functions[0], test1_click, &oc);
-	OptFunc_init(&functions[1], test2_click, NULL);
+	OptFunc_init(&functions[1], test4_click, NULL);
 	OptFunc_init(&functions[2], test3_click, NULL);
 
 	OptsChser_init(&oc, options, OPTIONS_AMOUNT, functions);

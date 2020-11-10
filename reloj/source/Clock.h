@@ -21,7 +21,6 @@ void initClock(Clock* clock);
 /**
  * Update the seconds, minutes and hours of the clock
  * @param clock struct to be updated
- * @param np (Number printer) to print the clock
  */
 void updateClock(Clock* clock);
 
