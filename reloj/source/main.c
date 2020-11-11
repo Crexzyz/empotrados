@@ -8,6 +8,7 @@
 #include "DisplayController.h"
 #include "OptionsChooser.h"
 #include "Clock.h"
+#include "StopWatch.h"
 
 #define SPRITE_BUFFER_SIZE 8 // "00:00:00"
 OBJ_ATTR obj_buffer[128];
@@ -122,10 +123,12 @@ void test2_click(DispCtrl* dc )
 void test3_click(DispCtrl * dc)
 {
 	Clock clockWatch;
-    init_clock(&clockWatch);
-
 	StopWatch stopWatch;
     init_stop_watch(&stopWatch);
+
+	Params param;
+	param.clock = &clockWatch;
+    param.stopWatch = &stopWatch;
 
 	OptionText options[OPTIONS_STOPWATCH];
 	OptionText_init(&options[0], "Start", strlen("Start"));
@@ -133,7 +136,7 @@ void test3_click(DispCtrl * dc)
 	OptionText_init(&options[2], "Back", strlen("Back"));
 
 	OptionFunction functions[OPTIONS_STOPWATCH];
-	OptFunc_init(&functions[0], start_stop_watch, &stopWatch);
+	OptFunc_init(&functions[0], start_stop_watch, &param);
 	OptFunc_init(&functions[1], lap_stop_watch, &stopWatch);
 	OptFunc_init(&functions[2], DispCtrl_back, dc);
 	
@@ -155,11 +158,7 @@ void test3_click(DispCtrl * dc)
 		
 		if(frame_counter % 10 == 0)
 		{
-			update_clock(&clockWatch);
 			update_stop_watch(&stopWatch);
-
-			// np_print(&np, 50, 30, WHITE, buf, strnlen(buf, SPRITE_BUFFER_SIZE + 1));
-			// oam_copy(oam_mem, obj_buffer, SPRITE_BUFFER_SIZE);
 		}
 
 		if(dc->content_change == true)
