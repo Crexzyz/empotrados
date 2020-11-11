@@ -62,14 +62,14 @@ void test4_click(DispCtrl * dc)
 	char buf[SPRITE_BUFFER_SIZE + 1]; buf[SPRITE_BUFFER_SIZE] = 0;
 
 	Clock clock;
-    initClock(&clock);
+    init_clock(&clock);
 
 	OptionText options[1];
 	OptionText_init(&options[0], "Back", strlen("Back"));
 
 	OptionFunction functions[1];
 	OptFunc_init(&functions[0], DispCtrl_back, dc);
-
+	
 	OptsChser oc;
 	OptsChser_init(&oc, options, 1, functions);
 
@@ -88,7 +88,7 @@ void test4_click(DispCtrl * dc)
 		
 		if(frame_counter % 10 == 0)
 		{
-			updateClock(&clock);
+			update_clock(&clock);
 			
 			snprintf(buf, SPRITE_BUFFER_SIZE + 1, "%02d:%02d:%02d",
 				clock.hours, clock.minutes, clock.seconds);
@@ -117,9 +117,57 @@ void test2_click(DispCtrl* dc )
 
 }
 
-void test3_click()
+#define OPTIONS_STOPWATCH 3
+
+void test3_click(DispCtrl * dc)
 {
-	tte_write("#{P:100,100} Click 3");
+	Clock clockWatch;
+    init_clock(&clockWatch);
+
+	StopWatch stopWatch;
+    init_stop_watch(&stopWatch);
+
+	OptionText options[OPTIONS_STOPWATCH];
+	OptionText_init(&options[0], "Start", strlen("Start"));
+	OptionText_init(&options[1], "Lap", strlen("Lap"));
+	OptionText_init(&options[2], "Back", strlen("Back"));
+
+	OptionFunction functions[OPTIONS_STOPWATCH];
+	OptFunc_init(&functions[0], start_stop_watch, &stopWatch);
+	OptFunc_init(&functions[1], lap_stop_watch, &stopWatch);
+	OptFunc_init(&functions[2], DispCtrl_back, dc);
+	
+	OptsChser oc;
+	OptsChser_init(&oc, options, OPTIONS_STOPWATCH, functions);
+	OptsChser_set_coords(&oc, 0 , OPTSCHSER_DEFAULT_Y);
+	NumberPrinter np;
+	np_init(&np, &obj_buffer[0], SPRITE_BUFFER_SIZE);
+
+	size_t frame_counter = 0;
+	
+	while(true)
+	{
+		VBlankIntrWait();
+		frame_counter = (frame_counter + 1) % 60;
+
+		key_poll();
+		OptsChser_show(&oc);
+		
+		if(frame_counter % 10 == 0)
+		{
+			update_clock(&clockWatch);
+			update_stop_watch(&stopWatch);
+
+			// np_print(&np, 50, 30, WHITE, buf, strnlen(buf, SPRITE_BUFFER_SIZE + 1));
+			// oam_copy(oam_mem, obj_buffer, SPRITE_BUFFER_SIZE);
+		}
+
+		if(dc->content_change == true)
+			break;
+	}
+
+	oam_copy(oam_mem, 0, SPRITE_BUFFER_SIZE);
+	dc->content_change = false;
 }
 
 #define OPTIONS_AMOUNT 3
@@ -138,7 +186,7 @@ void dispctrl_test()
 
 	OptFunc_init(&functions[0], test1_click, &oc);
 	OptFunc_init(&functions[1], test2_click, &dc);
-	OptFunc_init(&functions[2], test3_click, NULL);
+	OptFunc_init(&functions[2], test3_click, &dc);
 
 	OptsChser_init(&oc, options, OPTIONS_AMOUNT, functions);
 
