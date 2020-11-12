@@ -90,7 +90,7 @@ void run_stopwatch(DispCtrl * dc)
 
 	OptionFunction functions[OPTIONS_STOPWATCH];
 	OptFunc_init(&functions[0], start_stop_watch, &param);
-	OptFunc_init(&functions[1], lap_stop_watch, &stopWatch);
+	OptFunc_init(&functions[1], lap_stop_watch, &param);
 	OptFunc_init(&functions[2], DispCtrl_back, dc);
 	
 	OptsChser oc;
@@ -100,6 +100,12 @@ void run_stopwatch(DispCtrl * dc)
 	np_init(&np, &obj_buffer[0], SPRITE_BUFFER_SIZE);
 
 	size_t frame_counter = 0;
+
+	char buf[50];
+    snprintf(buf, 50, "#{P:10,30} Timer:");
+    tte_write(buf);
+    snprintf(buf, 50, "#{P:10,40} 00:00:00");
+    tte_write(buf);
 	
 	while(true)
 	{
@@ -111,7 +117,7 @@ void run_stopwatch(DispCtrl * dc)
 		
 		if(frame_counter % 10 == 0)
 		{
-			update_stop_watch(&stopWatch);
+			update_stop_watch(&stopWatch, &clockWatch);
 		}
 
 		if(dc->content_change == true)

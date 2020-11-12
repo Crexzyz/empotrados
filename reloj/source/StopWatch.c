@@ -1,50 +1,52 @@
 #include "StopWatch.h"
 
 void init_stop_watch(StopWatch* stopWatch){
-    stopWatch->newSeconds = 0;
-    stopWatch->newMinutes = 0;
-    stopWatch->newHours = 0;
     stopWatch->lastLap = 0;
     stopWatch->maxLap = 1;
+    stopWatch->totalSeconds = 0;
+    stopWatch->initTime = 0;
     stopWatch->start = false;
 }
 
 void start_stop_watch(Params* data){
     data->stopWatch->start = true;
+
     init_clock(data->clock);
-}
-
-void lap_stop_watch(StopWatch* stopWatch){
-    Laps lap;
-    lap.seconds = stopWatch->newSeconds;
-    lap.minutes = stopWatch->newMinutes;
-    lap.hours = stopWatch->newHours;
-    lap.lap = stopWatch->maxLap;
-    stopWatch->laps[stopWatch->lastLap] = lap;
+    // update_clock(data->clock);
     
-    stopWatch->lastLap= (stopWatch->lastLap+1)%MAX_LAPS;
-    ++stopWatch->maxLap;
-
-    stopWatch->newMinutes = 0;
-    stopWatch->newHours = 0;
-    stopWatch->newSeconds = 0;
-
-    show_laps(stopWatch);
-    restart_clock();
+    data->stopWatch->totalSeconds = REG_TM3D;
+    data->stopWatch->initTime = REG_TM3D;
 }
 
-void update_stop_watch(StopWatch* stopWatch){
-    if(REG_TM3D != stopWatch->newSeconds && stopWatch->start){ // Time increment
-        ++stopWatch->newSeconds;
-        stopWatch->newMinutes = (stopWatch->newSeconds%3600)/60;
-        stopWatch->newHours = stopWatch->newSeconds/3600;
-        stopWatch->newSeconds = stopWatch->newSeconds%60;
+void lap_stop_watch(Params* data){
+    int newSeconds = REG_TM3D - data->stopWatch->totalSeconds;
+    data->stopWatch->totalSeconds = REG_TM3D;
+    Laps lap;
+    lap.seconds = newSeconds%60;
+    lap.minutes = (newSeconds%3600)/60;
+    lap.hours = newSeconds/3600;
+    lap.lap = data->stopWatch->maxLap;
+
+    data->stopWatch->laps[data->stopWatch->lastLap] = lap;
+    data->stopWatch->lastLap= (data->stopWatch->lastLap+1)%MAX_LAPS;
+    ++data->stopWatch->maxLap;
+
+    show_laps(data->stopWatch);
+}
+
+void update_stop_watch(StopWatch* stopWatch, Clock* clock){
+    int newSeconds = 0;
+    if(REG_TM3D != clock->seconds && stopWatch->start){ // Time increment
+        newSeconds = REG_TM3D - stopWatch->initTime;
+        clock->seconds = newSeconds%60;
+        clock->minutes = (newSeconds%3600)/60;
+        clock->hours = newSeconds/3600;
     }
     char buf[50];
     snprintf(buf, 50, "#{P:10,30} Timer:");
     tte_write(buf);
     snprintf(buf, 50, "#{P:10,40} %02d:%02d:%02d",
-		stopWatch->newHours, stopWatch->newMinutes, stopWatch->newSeconds);
+		clock->hours, clock->minutes, clock->seconds);
     tte_write(buf);
 }
 

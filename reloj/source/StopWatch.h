@@ -14,9 +14,8 @@ typedef struct _Laps { // Laps for chronometer
 } Laps;
 
 typedef struct _StopWatch { // chronometer
-    u32 newSeconds;
-    u32 newMinutes;
-    u32 newHours;
+    u32 totalSeconds;
+    u32 initTime;
     Laps laps[MAX_LAPS];
     int lastLap;
     int maxLap;
@@ -43,15 +42,15 @@ void start_stop_watch(Params* data);
 
 /**
  * Register a lap
- * @param stopWatch struct that contains the record of the laps
+ * @param data struct that contains the pointer to clock and stopWatch
  */
-void lap_stop_watch(StopWatch* stopWatch);
+void lap_stop_watch(Params* data);
 
 /**
  * Update the hours, minutes and seconds
  * @param stopWatch struct that contains the record of the laps
  */
-void update_stop_watch(StopWatch* stopWatch);
+void update_stop_watch(StopWatch* stopWatch, Clock* clock);
 
 /**
  * Show the laps recorded
