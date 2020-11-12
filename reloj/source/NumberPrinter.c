@@ -94,6 +94,7 @@ void np_rainbow_print(NumberPrinter * np, u32 x, u32 y, char * numbers, u32 len)
 
     for(size_t sprite = 0; sprite < np->sprite_amount; ++sprite)
     {
+        obj_unhide(&np->sprites[sprite], 0);
         u8 real_number = sprite < len ? char_to_sprite(numbers[sprite]) : QUESTION_MARK;
 
         (&np->sprites[sprite])->attr2 = ATTR2_BUILD(NP_BG_BUILD(color, real_number), 0, 0);
