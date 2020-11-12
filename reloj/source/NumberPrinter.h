@@ -49,6 +49,8 @@ void np_init(NumberPrinter * np, OBJ_ATTR * sprites, u32 amount);
  */
 void np_print(NumberPrinter * np, u32 x, u32 y, u8 color, char * numbers, u32 len);
 
+void np_print_highlight(NumberPrinter * np, u32 x, u32 y, u8 color, u8 highlight_color, u8 highlight_index, char * numbers, u32 len);
+
 void np_rainbow_print(NumberPrinter * np, u32 x, u32 y, char * numbers, u32 len);
 
 #endif

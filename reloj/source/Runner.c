@@ -129,15 +129,6 @@ void run_stopwatch(DispCtrl * dc)
 	dc->content_change = false;
 }
 
-void run_time_chooser(DispCtrl * dc)
-{
-}
-
-void open_time_chooser(DispCtrl * dc)
-{
-	DispCtrl_push(dc, run_time_chooser);
-}
-
 void run_alarm(DispCtrl * dc)
 {
 	const u8 options_count = 2;
@@ -160,7 +151,7 @@ void run_alarm(DispCtrl * dc)
 	OptsChser_set_coords(&oc, 0, 100);
 
 	np_init(&np, sprite_buf, TIME_CHOOSER_BUF_SIZE - 1);
-	TimeChooser_init(&tc, &np, 30, 30);
+	TimeChooser_init(&tc, &np, 50, 30);
 
 	while(true)
 	{
@@ -173,11 +164,11 @@ void run_alarm(DispCtrl * dc)
 		{
 			// Prevents listening for keystrokes on the menu
 			OptsChser_show(&oc);
-			tte_write("#{P:0,150}                              ");
+			tte_write("#{P:0,150}         ");
 		}
 		else
 		{
-			tte_write("#{P:0,150} A: Save           B: Cancel");
+			tte_write("#{P:0,150} A: Save");
 		}
 
 		oam_copy(&oam_mem[SPRITE_BUFFER_SIZE], sprite_buf, TIME_CHOOSER_BUF_SIZE - 1);

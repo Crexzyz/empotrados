@@ -19,18 +19,8 @@ void TimeChooser_show(TimeChooser * tc)
 {
     if(tc->editing)
     {
-        if(key_hit(KEY_A))
-        {
-            TimeChooser_toggle_edit(tc);
-
-            // Wait till key released
-            while(!key_released(KEY_A))
-                key_poll();
-        }
-        else if(key_hit(KEY_B))
-        {
-            TimeChooser_toggle_edit(tc);
-        }
+        TimeChooser_edit(tc);
+        np_print_highlight(tc->np, tc->start_x, tc->start_y, WHITE, BLACK, tc->current_number, tc->buffer, TIME_CHOOSER_BUF_SIZE);
     }
     else
     {
@@ -41,6 +31,66 @@ void TimeChooser_show(TimeChooser * tc)
 void TimeChooser_toggle_edit(TimeChooser * tc)
 {
     tc->editing = !tc->editing;
+}
+
+void TimeChooser_edit(TimeChooser * tc)
+{
+    if(key_hit(KEY_UP))
+    {
+        if(IS_MINUTE_LIMIT(tc->current_number))
+        {
+            if(tc->buffer[tc->current_number] == '5')
+                tc->buffer[tc->current_number] = '0';
+            else
+                ++tc->buffer[tc->current_number];
+        }
+        else
+        {
+            if(tc->buffer[tc->current_number] == '9')
+                tc->buffer[tc->current_number] = '0';
+            else
+                ++tc->buffer[tc->current_number];
+        }
+    }
+    else if (key_hit(KEY_DOWN))
+    {
+        if(IS_MINUTE_LIMIT(tc->current_number))
+        {
+            if(tc->buffer[tc->current_number] == '0')
+                tc->buffer[tc->current_number] = '5';
+            else
+                --tc->buffer[tc->current_number];
+        }
+        else
+        {
+            if(tc->buffer[tc->current_number] == '0')
+                tc->buffer[tc->current_number] = '9';
+            else
+                --tc->buffer[tc->current_number];
+        }
+        
+    }
+    else if(key_hit(KEY_LEFT))
+    {
+        if(tc->current_number - 1 == TIME_CHOOSER_FIRST_COLON || tc->current_number - 1 == TIME_CHOOSER_SECOND_COLON)
+            --tc->current_number;
+        tc->current_number = tc->current_number == 0 ? TIME_CHOOSER_BUF_SIZE - 2 : tc->current_number - 1;
+    }
+    else if(key_hit(KEY_RIGHT))
+    {
+        if(tc->current_number + 1 == TIME_CHOOSER_FIRST_COLON || tc->current_number + 1 == TIME_CHOOSER_SECOND_COLON)
+            ++tc->current_number;
+
+        tc->current_number = (tc->current_number + 1) % (TIME_CHOOSER_BUF_SIZE - 1);
+    }
+    else if(key_hit(KEY_A))
+    {
+        TimeChooser_toggle_edit(tc);
+
+        // Wait till key released
+        while(!key_released(KEY_A))
+            key_poll();
+    }
 }
 
 int test = 0;
