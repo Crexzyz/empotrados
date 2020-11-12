@@ -34,6 +34,11 @@ void open_stopwatch(DispCtrl * dc)
 	DispCtrl_push(dc, run_stopwatch);
 }
 
+void open_alarm(DispCtrl * dc)
+{
+	DispCtrl_push(dc, run_alarm);
+}
+
 void dispctrl_test()
 {
 	OptsChser oc;
@@ -42,11 +47,11 @@ void dispctrl_test()
 	OptionFunction functions[OPTIONS_AMOUNT];
 	OptionFunction function_buffer[STACK_MAX_CAPACITY];
 
-	OptionText_init(&options[0], "Test 1", strlen("Test 1"));
+	OptionText_init(&options[0], "Alarm", strlen("Alarm"));
 	OptionText_init(&options[1], "Clock", strlen("Clock"));
-	OptionText_init(&options[2], "Stopwatch", strlen("Test 3"));
+	OptionText_init(&options[2], "Stopwatch", strlen("Stopwatch"));
 
-	OptFunc_init(&functions[0], test1_click, NULL);
+	OptFunc_init(&functions[0], open_alarm, &dc);
 	OptFunc_init(&functions[1], open_clock, &dc);
 	OptFunc_init(&functions[2], open_stopwatch, &dc);
 

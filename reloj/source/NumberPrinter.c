@@ -20,6 +20,7 @@ void np_init(NumberPrinter * np, OBJ_ATTR * sprites, u32 amount)
     for(size_t sprite = 0; sprite < amount; ++sprite)
     {
         obj_set_attr(&np->sprites[sprite], ATTR0_SQUARE | ATTR0_8BPP, ATTR1_SIZE_16, ATTR2_PALBANK(0));
+        obj_hide((&np->sprites[sprite]));
     }
 }
 

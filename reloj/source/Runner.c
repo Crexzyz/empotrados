@@ -10,6 +10,7 @@
 #include "OptionsChooser.h"
 #include "Clock.h"
 #include "StopWatch.h"
+#include "TimeChooser.h"
 
 OBJ_ATTR obj_buffer[128];
 
@@ -125,6 +126,66 @@ void run_stopwatch(DispCtrl * dc)
 	}
 
 	oam_copy(oam_mem, 0, SPRITE_BUFFER_SIZE);
+	dc->content_change = false;
+}
+
+void run_time_chooser(DispCtrl * dc)
+{
+}
+
+void open_time_chooser(DispCtrl * dc)
+{
+	DispCtrl_push(dc, run_time_chooser);
+}
+
+void run_alarm(DispCtrl * dc)
+{
+	const u8 options_count = 2;
+
+	TimeChooser tc;
+	NumberPrinter np;
+	OptionText options[options_count];
+	OptionFunction functions[options_count];
+	OptsChser oc;
+
+	OBJ_ATTR * sprite_buf = &obj_buffer[SPRITE_BUFFER_SIZE + 1];
+
+	OptionText_init(&options[0], "Back", strlen("Back"));
+	OptionText_init(&options[1], "Set alarm", strlen("Set alarm"));
+
+	OptFunc_init(&functions[0], DispCtrl_back, dc);
+	OptFunc_init(&functions[1], TimeChooser_toggle_edit, &tc);
+
+	OptsChser_init(&oc, options, options_count, functions);
+	OptsChser_set_coords(&oc, 0, 100);
+
+	np_init(&np, sprite_buf, TIME_CHOOSER_BUF_SIZE - 1);
+	TimeChooser_init(&tc, &np, 30, 30);
+
+	while(true)
+	{
+		VBlankIntrWait();
+
+		key_poll();
+		TimeChooser_show(&tc);
+
+		if(!tc.editing)
+		{
+			// Prevents listening for keystrokes on the menu
+			OptsChser_show(&oc);
+			tte_write("#{P:0,150}                              ");
+		}
+		else
+		{
+			tte_write("#{P:0,150} A: Save           B: Cancel");
+		}
+
+		oam_copy(&oam_mem[SPRITE_BUFFER_SIZE], sprite_buf, TIME_CHOOSER_BUF_SIZE - 1);
+		if(dc->content_change == true)
+			break;
+	}
+
+	oam_copy(&oam_mem[SPRITE_BUFFER_SIZE], 0, TIME_CHOOSER_BUF_SIZE);
 	dc->content_change = false;
 }
 
