@@ -32,3 +32,10 @@ void DispCtrl_back(DispCtrl * dc)
     dc->content_change = true;
     stack_pop(&dc->stack);
 }
+
+void DispCtrl_push(DispCtrl * dc, void (*func))
+{
+    OptionFunction function;
+	OptFunc_init(&function, func, dc);
+	stack_push(&dc->stack, &function);
+}
