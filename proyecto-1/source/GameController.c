@@ -88,6 +88,7 @@ void gamectrl_start()
 
 	bool start = false;
 	bool win = false;
+    bool second_level= false;
 
 	int hScroll = 0;
 	int h2Scroll = 0;
@@ -118,9 +119,16 @@ void gamectrl_start()
 
 		if(start)
         {
-			gamectrl_show_first_lvl(totalScore, &frame_counter, &h2Scroll);
+            if(!second_level){
+                gamectrl_show_first_lvl(totalScore, &frame_counter, &h2Scroll);
+            
+            }else{
+                gamectrl_show_second_lvl(totalScore, &frame_counter, &h2Scroll);
 
-            if(coin.currentScore == 3)
+            }
+			
+
+            if(coin.currentScore == 2)
             {
                 win = true;
 
@@ -142,7 +150,18 @@ void gamectrl_start()
                 dma3_cpy(pal_bg_mem, twoCloudgrayPal, twoCloudgrayPalLen);
             }
 
-            if(coin.currentScore == 3 || sprite.pos_y > 160)
+            if(coin.currentScore == 1 && !second_level)
+            {
+                second_level_transition(oam_mem, SPRITES_AMOUNT);
+                dma3_cpy(pal_bg_mem, twoCloudPal, twoCloudPalLen);
+                dma3_cpy(tile_mem[0], twoCloudTiles, twoCloudTilesLen);
+                dma3_cpy(se_mem[30], twoCloudMap, twoCloudMapLen);
+                sprite.jumps = 0;
+                second_level= true;
+                start = false;
+            }
+
+            if(sprite.pos_y > 160 || (coin.currentScore == 2 && second_level))
             {
                 final_screen(oam_mem, coin.currentScore, SPRITES_AMOUNT);
                 sprite_place_on_rect(&sprite, blockgen_get_topmost_block8(&bgen, 0));
@@ -150,6 +169,7 @@ void gamectrl_start()
 
                 sprite.jumps = 0;
                 start = false;
+                second_level = false;
             }
         }
 	}
@@ -185,6 +205,40 @@ bool gamectrl_show_main_menu()
 void gamectrl_show_first_lvl(char * totalScore, u32 * frame_counter, int * h2Scroll)
 {
     for(int i = 0; i < BLOCKS_AMOUNT; ++i)
+        rect_paint(&bgen.blocks[i]);
+
+    // If the blocks scrolled, scroll the player as well
+    if(blockgen_autoscroll(&bgen)) sprite.pos_y += 1;
+
+    Rect * rects = bgen.blocks;
+    sprite_update_pos_collision(&sprite, &rects, BLOCKS_AMOUNT);
+    sprite_change_animation(&sprite);
+
+    // Change coin animation
+    sprite_coin_update_pos(&coin);
+    sprite_coin_change_animation(&coin);
+
+    // Detect coin-sprite collision
+    if(do_sprites_collisions(&coin,&sprite)){
+        // Write in screen, position x = 0, y = 0
+        snprintf(totalScore, 100, "#{P:0, 0}Coins:%d", coin.currentScore);
+        tte_write(totalScore);
+    }
+
+    sprite_coin_unhide(&coin, &sprite);
+
+    // Move the sprites to VRAM. Player + coin + blocks
+    oam_copy(oam_mem, obj_buffer, SPRITES_AMOUNT);
+
+    *frame_counter = (*frame_counter + 1) % 5;
+
+    // Move background vertical
+    REG_BG1_SCROLL_V = *h2Scroll += *frame_counter == 0 ? 1 : 0;
+}
+
+void gamectrl_show_second_lvl(char * totalScore, u32 * frame_counter, int * h2Scroll)
+{
+        for(int i = 0; i < BLOCKS_AMOUNT; ++i)
         rect_paint(&bgen.blocks[i]);
 
     // If the blocks scrolled, scroll the player as well

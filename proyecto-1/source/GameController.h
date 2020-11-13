@@ -17,5 +17,5 @@ void gamectrl_start();
 
 bool gamectrl_show_main_menu();
 void gamectrl_show_first_lvl(char * totalScore, u32 * frame_counter, int * h2Scroll);
-
+void gamectrl_show_second_lvl(char * totalScore, u32 * frame_counter, int * h2Scroll);
 #endif

@@ -28,6 +28,7 @@ void title_init(PATTERN* pats, OBJ_ATTR *oe);
 void print_instructions(OBJ_ATTR *oe);
 // Function that sets the end game screen
 void final_screen(OBJ_ATTR *oam, int currentScore, u32 sprites_amount);
-
+// Function that sets the second level screen
+void second_level_transition(OBJ_ATTR *oam, u32 sprites_amount);
 
 #endif
