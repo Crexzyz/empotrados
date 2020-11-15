@@ -54,7 +54,7 @@ void print_instructions(OBJ_ATTR *oe){
     oam_copy(oe, 0, 12);
 	tte_write("#{es}");
 	tte_write("#{P:5, 30} Utilice las flechas \n para moverse");
-	tte_write("#{P:5, 60} Obtenga 3 monedas \n para ganar el juego");
+	tte_write("#{P:5, 60} Obtenga 1 monedas \n para pasar al nivel 2");
 	tte_write("#{P:5, 90} Suerte");
 	tte_write("#{P:5, 120} Presione A para continuar");
 }
@@ -68,5 +68,15 @@ void final_screen(OBJ_ATTR *oam, int currentScore, u32 sprites_amount)
     snprintf(totalScore, 100, "#{P:70, 80} Su puntaje es:%d", currentScore);
 	tte_write(totalScore);
 	tte_write("#{P:0, 120} Presione Start para continuar");
+}
+
+void second_level_transition(OBJ_ATTR *oam, u32 sprites_amount)
+{
+    oam_copy(oam, 0, sprites_amount);
+	tte_write("#{es}");
+	tte_write("#{P:5, 30} Bievenido al \n segundo nivel");
+	tte_write("#{P:5, 60} Obtenga 2 monedas \n para ganar el juego");
+	tte_write("#{P:5, 90} Suerte");
+	tte_write("#{P:5, 120} Presione A para continuar");
 }
 
