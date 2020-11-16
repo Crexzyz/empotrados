@@ -91,12 +91,14 @@ void run_stopwatch(DispCtrl * dc)
 	OptionText options[OPTIONS_STOPWATCH];
 	OptionText_init(&options[0], "Start", strlen("Start"));
 	OptionText_init(&options[1], "Lap", strlen("Lap"));
-	OptionText_init(&options[2], "Back", strlen("Back"));
+	OptionText_init(&options[2], "Reset", strlen("Reset"));
+	OptionText_init(&options[3], "Back", strlen("Back"));
 
 	OptionFunction functions[OPTIONS_STOPWATCH];
 	OptFunc_init(&functions[0], start_stop_watch, &param);
 	OptFunc_init(&functions[1], lap_stop_watch, &param);
-	OptFunc_init(&functions[2], DispCtrl_back, dc);
+	OptFunc_init(&functions[2], reset_stop_watch, &stopWatch);
+	OptFunc_init(&functions[3], DispCtrl_back, dc);
 	
 	OptsChser oc;
 	OptsChser_init(&oc, options, OPTIONS_STOPWATCH, functions);

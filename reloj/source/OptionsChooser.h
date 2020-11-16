@@ -3,7 +3,7 @@
 
 #include <tonc.h>
 
-#define OPTS_MAX_SIZE 3
+#define OPTS_MAX_SIZE 4
 
 /**
  * Text for an option with its size 

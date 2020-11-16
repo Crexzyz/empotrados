@@ -58,4 +58,10 @@ void update_stop_watch(StopWatch* stopWatch, Clock* clock);
  */
 void show_laps(StopWatch* stopWatch);
 
+/**
+ * Reset the timer of the stop watch and clean the laps registered
+ * @param stopWatch struct that contains the pointer to stopWatch data
+ */
+void reset_stop_watch(StopWatch* stopWatch);
+
 #endif
