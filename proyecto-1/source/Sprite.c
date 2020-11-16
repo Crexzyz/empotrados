@@ -25,6 +25,7 @@ void sprite_init(Sprite * sprite, OBJ_ATTR * attribs)
     sprite->speed_y = 0;
     sprite->frames_in_air = 0;
     sprite->jumps = 0;
+    sprite->jumpsTrap = 0;
 }
 
 void sprite_paint(Sprite * sprite)
@@ -110,6 +111,7 @@ void sprite_update_y_pos_speed(Sprite * sprite)
 
         // Update the count pixels jumped
         sprite->jumps++;
+        sprite->jumpsTrap++;
     }
     
     if (sprite_get_state(sprite) == JUMPING)

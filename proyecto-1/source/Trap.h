@@ -31,5 +31,6 @@ void sprite_trap_change_animation(Trap* sprite_trap);
 int do_sprites_collision(Trap* sprite_trap, Sprite * sprite, Coin* coin);
 int sprite_trap_unhide(Trap* jumps, Sprite * sprite);
 void sprite_trap_check_pos(Trap* sprite_trap, Sprite* sprite);
+void trap_hide(Trap* sprite_trap);
 
 #endif

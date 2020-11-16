@@ -147,6 +147,7 @@ void gamectrl_start()
                 win = false;
                 // Change palette
                 dma3_cpy(pal_bg_mem, twoCloudgrayPal, twoCloudgrayPalLen);
+                trap_hide(&trap);
             }
 
             if(coin.currentScore == 1 && !second_level)
@@ -169,6 +170,7 @@ void gamectrl_start()
                 sprite.jumps = 0;
                 second_level = false;
                 start = false;
+                trap_hide(&trap);
             }
         }
 	}

@@ -5,8 +5,8 @@
 */
 void sprite_trap_init(Trap* sprite_trap, OBJ_ATTR * attribs){
     sprite_trap->sprite_attrs = attribs;
-    sprite_trap->first_anim_frame = 10 * 8;
-    sprite_trap->anim_frame = 10 * 8;
+    sprite_trap->first_anim_frame = 16 * 8;
+    sprite_trap->anim_frame = 16 * 8;
     sprite_trap->pos_x = (rand() % (200 - 17)) + 17;
     sprite_trap->pos_y = (rand() % (124 - 17)) + 17;
     sprite_trap->speed_y = 5;
@@ -20,8 +20,8 @@ void sprite_trap_init(Trap* sprite_trap, OBJ_ATTR * attribs){
 */
 void sprite_trap_init_with_colis(Trap* sprite_trap, OBJ_ATTR * attribs, Sprite* sprite){
     sprite_trap->sprite_attrs = attribs;
-    sprite_trap->first_anim_frame = 10 * 8;
-    sprite_trap->anim_frame = 10 * 8;
+    sprite_trap->first_anim_frame = 16 * 8;
+    sprite_trap->anim_frame = 16 * 8;
     sprite_trap->pos_x = (rand() % (200 - 17)) + 17;
     sprite_trap->pos_y = (rand() % (124 - 17)) + 17;
     sprite_trap_check_pos(sprite_trap, sprite);
@@ -83,7 +83,7 @@ void sprite_trap_change_animation(Trap* sprite_trap)
     // Cycle through the 6 moving frames
     sprite_trap->anim_frame = sprite_trap->anim_frame % 6;
     // Set the current sprite frame as base pixel + current frame pixel offset
-	sprite_attrs->attr2= ATTR2_BUILD(16*8, 0, 0); 
+	sprite_attrs->attr2= ATTR2_BUILD(sprite_trap->first_anim_frame, 0, 0); 
 }
 
 /**
@@ -114,7 +114,7 @@ int do_sprites_collision(Trap* sprite_trap, Sprite * sprite, Coin* coin){
 */
 int sprite_trap_unhide(Trap* sprite_trap, Sprite * sprite){
     if(sprite_trap->hidden){ // If the trap is hidden
-        if(sprite->jumps >= 4){ // Condition to put another trap
+        if(sprite->jumpsTrap >= 4){ // Condition to put another trap
             sprite_trap->hidden = 0;
             sprite_trap->pos_x = (rand() % (200 - 17)) + 17;
             sprite_trap->pos_y = (rand() % (124 - 17)) + 17;
@@ -122,13 +122,13 @@ int sprite_trap_unhide(Trap* sprite_trap, Sprite * sprite){
             sprite_trap_update_pos(sprite_trap);
             obj_unhide(sprite_trap->sprite_attrs, 0 );
             // Reset the count
-            sprite->jumps = 0;
+            sprite->jumpsTrap = 0;
             // Count reached
             return 1;
         }
-    }else if(sprite->jumps >= 4){
+    }else if(sprite->jumpsTrap >= 4){
         // Reset the count
-        sprite->jumps = 0;
+        sprite->jumpsTrap = 0;
     }
     // Count not reached
     return 0;
@@ -151,4 +151,9 @@ void sprite_trap_check_pos(Trap* sprite_trap, Sprite* sprite){
             sprite_trap->pos_x = sprite_trap->pos_x - 60;
         }
     }
+}
+
+void trap_hide(Trap* sprite_trap){
+    obj_hide(sprite_trap->sprite_attrs);
+    sprite_trap->hidden = 1;
 }

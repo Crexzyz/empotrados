@@ -34,6 +34,7 @@ typedef struct Sprite
 	int frames_in_air;
 	// Pixels needed to put another coin
 	int jumps; 
+	int jumpsTrap;
 } Sprite;
 
 enum SpriteFrames 
