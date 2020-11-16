@@ -121,16 +121,20 @@ void gamectrl_start()
 		if(start)
         {
             if(!second_level){
+                coin.currentScore = 0;
                 gamectrl_show_first_lvl(totalScore, &frame_counter, &h2Scroll);
             
             }else{
                 gamectrl_show_second_lvl(totalScore, &frame_counter, &h2Scroll);
-
+                VBlankIntrWait(); 
+                mmFrame(); 
             }
 			
             if(coin.currentScore == 3)
             {
                 win = true;
+                mmStop(); 
+                VBlankIntrWait(); 
 
                 REG_BG1_SCROLL_V = 0;
                 REG_BG1_SCROLL_H = 0;
@@ -152,6 +156,7 @@ void gamectrl_start()
 
             if(coin.currentScore == 1 && !second_level)
             {
+                change_music();
                 second_level_transition(oam_mem, SPRITES_AMOUNT);
                 dma3_cpy(pal_bg_mem, twoCloudPal, twoCloudPalLen);
                 dma3_cpy(tile_mem[0], twoCloudTiles, twoCloudTilesLen);

@@ -57,21 +57,9 @@ void music_note_play(int note, int octave)
 	REG_SND1FREQ = SFREQ_RESET | SND_RATE(note, octave);
 }
 
-// void effects()
-// {
-//     mm_sound_effect ambulance = {
-// 		{ SFX_AMBULANCE } ,			// id
-// 		(int)(1.0f * (1<<10)),	// rate
-// 		0,		// handle
-// 		255,	// volume
-// 		0,		// panning
-// 	};
-
-// 	mm_sound_effect boom = {
-// 		{ SFX_BOOM } ,			// id
-// 		(int)(1.0f * (1<<10)),	// rate
-// 		0,		// handle
-// 		255,	// volume
-// 		255,	// panning
-// 	};
-// }
+void change_music(){
+    mmStop();
+    VBlankIntrWait(); //para reproducir la musica del juego
+    mmFrame(); //para reproducir la musica del juego
+    mmStart(MOD_SUD, MM_PLAY_LOOP );
+}
