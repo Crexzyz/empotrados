@@ -16,5 +16,7 @@ void initial_sound();
 void sound_setting();
 void effects();
 void music_note_play(int note, int octave);
+void change_music();
+
 
 #endif
