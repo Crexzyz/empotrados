@@ -7,7 +7,7 @@
 #define REG_BG1_SCROLL_V       *((volatile u16*)(0x04000016))
 
 // Player + coin + blocks
-#define SPRITES_AMOUNT (1 + 1 + BLOCKS_AMOUNT + 1)
+#define SPRITES_AMOUNT (1 + 1 + BLOCKS_AMOUNT + 1 + 1 + 1 +1)
 
 int gamectrl_run();
 void gamectrl_init();

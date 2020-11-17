@@ -26,6 +26,9 @@ void sprite_init(Sprite * sprite, OBJ_ATTR * attribs)
     sprite->frames_in_air = 0;
     sprite->jumps = 0;
     sprite->jumpsTrap = 0;
+    sprite->jumpsEnemy = 0;
+    sprite->jumpsHeart = 0;
+    sprite->lives = 3;
 }
 
 void sprite_paint(Sprite * sprite)
@@ -76,6 +79,7 @@ int sprite_get_state(Sprite * sprite)
 
 void sprite_update_pos_collision(Sprite * sprite, Rect ** rects, size_t rects_amount)
 {
+    
     // Check the buttons and update the speed values
     sprite_update_x_pos_speed(sprite);
     sprite_update_y_pos_speed(sprite);
@@ -112,6 +116,7 @@ void sprite_update_y_pos_speed(Sprite * sprite)
         // Update the count pixels jumped
         sprite->jumps++;
         sprite->jumpsTrap++;
+        sprite->jumpsEnemy++;
     }
     
     if (sprite_get_state(sprite) == JUMPING)
