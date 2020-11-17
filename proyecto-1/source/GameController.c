@@ -1,5 +1,5 @@
 #include <tonc.h>
-
+#include "Enemy.h"
 #include "GameController.h"
 #include "Sprite.h"
 #include "Rect.h"
@@ -11,6 +11,7 @@
 #include "twoCloud.h"
 #include "win.h"
 #include "init.h"
+#include "Heart.h"
 #include "soundbank.h"
 #include "soundbank_bin.h"
 
@@ -18,12 +19,16 @@
 OBJ_ATTR obj_buffer[128];
 // sound
 u8 txt_scrolly= 8;
-
+int count = 0;
+u32 sec = -1;
 static Sprite sprite;
 static Coin coin;
 static Trap trap;
+static Heart heart;
 static BlockGenerator bgen;
 static PATTERN pats[HWLEN];
+static Enemy enemy1;
+static Enemy enemy2;
 
 void gamectrl_init_regs()
 {
@@ -67,9 +72,16 @@ int gamectrl_run()
 {
 	gamectrl_init();
 
+    REG_TM2D = -0x4000; // 0xFFFFC000
+    REG_TM2CNT = TM_FREQ_1024 | TM_ENABLE;
+    REG_TM3CNT = TM_ENABLE | TM_CASCADE;
+
     sprite_init(&sprite, &obj_buffer[0]);
 	sprite_coin_init(&coin, &obj_buffer[1]);
 	sprite_trap_init(&trap, &obj_buffer[10]);
+    sprite_enemy_init(&enemy1, &obj_buffer[11], 17);
+    sprite_enemy_init(&enemy2, &obj_buffer[12], 18);
+    sprite_heart_init(&heart, &obj_buffer[13]);
 	blockgen_init(&bgen, obj_buffer);
 	blockgen_init_blocks(&bgen);
 	sprite_place_on_rect(&sprite, blockgen_get_topmost_block8(&bgen, 0));
@@ -152,6 +164,9 @@ void gamectrl_start()
                 // Change palette
                 dma3_cpy(pal_bg_mem, twoCloudgrayPal, twoCloudgrayPalLen);
                 trap_hide(&trap);
+                heart_hide(&heart);
+                enemy_hide(&enemy1);
+                enemy_hide(&enemy2);
             }
 
             if(coin.currentScore == 1 && !second_level)
@@ -166,16 +181,20 @@ void gamectrl_start()
                 start = false;
             }
 
-            if(sprite.pos_y > 160 || (coin.currentScore == 3 && second_level))
+            if(sprite.pos_y > 160 || (coin.currentScore == 3 && second_level) || sprite.lives == 0)
             {
                 final_screen(oam_mem, coin.currentScore, SPRITES_AMOUNT);
                 sprite_place_on_rect(&sprite, blockgen_get_topmost_block8(&bgen, 0));
                 sprite_coin_init_with_colis(&coin, &obj_buffer[1],&sprite);
 
                 sprite.jumps = 0;
+                sprite.lives = 3;
                 second_level = false;
                 start = false;
                 trap_hide(&trap);
+                heart_hide(&heart);
+                enemy_hide(&enemy1);
+                enemy_hide(&enemy2);
             }
         }
 	}
@@ -203,6 +222,9 @@ bool gamectrl_show_main_menu()
         oam_copy(oe, 0, 12);
         sprite_coin_init(&coin, &obj_buffer[1]);
         sprite_trap_init(&trap, &obj_buffer[10]);
+        sprite_enemy_init(&enemy1, &obj_buffer[11], 17);
+        sprite_enemy_init(&enemy2, &obj_buffer[12], 18);
+        sprite_heart_init(&heart, &obj_buffer[13]);
 
         return true;
     }
@@ -250,6 +272,7 @@ void gamectrl_show_second_lvl(char * totalScore, u32 * frame_counter, int * h2Sc
     for(int i = 0; i < BLOCKS_AMOUNT; ++i)
         rect_paint(&bgen.blocks[i]);
 
+   
     // If the blocks scrolled, scroll the player as well
     if(blockgen_autoscroll(&bgen)) sprite.pos_y += 1;
 
@@ -265,6 +288,30 @@ void gamectrl_show_second_lvl(char * totalScore, u32 * frame_counter, int * h2Sc
     sprite_trap_update_pos(&trap);
     sprite_trap_change_animation(&trap);
 
+    //Every 5 seconds enemys will change position
+    if(REG_TM3D != sec){
+        sec = REG_TM3D;
+
+        if(((sec%60) % 5) == 0){
+           
+            sprite_enemy_change_pos(&enemy1);
+            sprite_enemy_change_pos(&enemy2);
+        }
+        
+    }
+
+    sprite_enemy_update_pos(&enemy1);
+    sprite_enemy_change_animation(&enemy1);
+
+    //heart will show when lives are low
+    if(sprite.lives == 1){
+        sprite_heart_update_pos(&heart);
+        sprite_heart_change_animation(&heart);
+    }
+
+    sprite_enemy_update_pos(&enemy2);
+    sprite_enemy_change_animation(&enemy2);
+
     // Detect coin-sprite collision
     if(do_sprites_collisions(&coin,&sprite)){
         // Write in screen, position x = 0, y = 0
@@ -273,14 +320,39 @@ void gamectrl_show_second_lvl(char * totalScore, u32 * frame_counter, int * h2Sc
     }
 
     // Detect trap-sprite collision
-    if(do_sprites_collision(&trap,&sprite, &coin)){
+    if(do_sprites_collision(&trap, &sprite, &coin)){
         // Write in screen, position x = 0, y = 0
         snprintf(totalScore, 100, "#{P:0, 0}Coins:%02d", coin.currentScore);
         tte_write(totalScore);
     }
 
+    // Detect enemy-sprite collision
+    if(do_enemy_collision(&enemy1 ,&sprite, &coin)){
+        // Write in screen, position x = 0, y = 0
+        snprintf(totalScore, 100, "#{P:0, 150}Lives:%02d", sprite.lives);
+        tte_write(totalScore);
+    }
+
+        // Detect enemy-sprite collision
+    if(do_enemy_collision(&enemy2 ,&sprite, &coin)){
+        // Write in screen, position x = 0, y = 0
+        snprintf(totalScore, 100, "#{P:0, 200}Lives:%02d", sprite.lives);
+        tte_write(totalScore);
+    }
+
+         // Detect heart-sprite collision
+    if(do_heart_collision(&heart ,&sprite, &coin)){
+        // Write in screen, position x = 0, y = 0
+        snprintf(totalScore, 100, "#{P:0, 200}Lives:%02d", sprite.lives);
+        tte_write(totalScore);
+    }
+
     sprite_coin_unhide(&coin, &sprite);
     sprite_trap_unhide(&trap, &sprite);
+    sprite_enemy_unhide(&enemy1, &sprite);
+    sprite_enemy_unhide(&enemy2, &sprite);
+
+    sprite_heart_unhide(&heart, &sprite);
 
     // Move the sprites to VRAM. Player + coin + blocks
     oam_copy(oam_mem, obj_buffer, SPRITES_AMOUNT);

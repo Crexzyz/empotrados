@@ -35,6 +35,10 @@ typedef struct Sprite
 	// Pixels needed to put another coin
 	int jumps; 
 	int jumpsTrap;
+	int jumpsEnemy;
+	int jumpsHeart;
+	int lives;
+	
 } Sprite;
 
 enum SpriteFrames 
