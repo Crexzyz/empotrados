@@ -45,7 +45,7 @@ void sound_setting()
     mmInitDefault( (mm_addr)soundbank_bin, 8 );
 
 	// Start playing module
-	mmStart( MOD_FLATOUTLIES, MM_PLAY_LOOP );
+	// mmStart( MOD_FLATOUTLIES, MM_PLAY_LOOP );
 
     // sound effect handle (for cancelling it later)
 	// mm_sfxhand amb = 0;

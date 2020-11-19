@@ -127,6 +127,9 @@ void gamectrl_start()
                 dma3_cpy(pal_bg_mem, twoCloudPal, twoCloudPalLen);
                 dma3_cpy(tile_mem[0], twoCloudTiles, twoCloudTilesLen);
                 dma3_cpy(se_mem[30], twoCloudMap, twoCloudMapLen);
+                if(!second_level)
+                    mmStart( MOD_FLATOUTLIES, MM_PLAY_LOOP );
+
             }
 		}
 
@@ -161,12 +164,14 @@ void gamectrl_start()
             else if(sprite.pos_y > 160)
             {
                 win = false;
+                mmStop();
                 // Change palette
                 dma3_cpy(pal_bg_mem, twoCloudgrayPal, twoCloudgrayPalLen);
                 trap_hide(&trap);
                 heart_hide(&heart);
                 enemy_hide(&enemy1);
                 enemy_hide(&enemy2);
+
             }
 
             if(coin.currentScore == 1 && !second_level)
@@ -183,6 +188,7 @@ void gamectrl_start()
 
             if(sprite.pos_y > 160 || (coin.currentScore == 3 && second_level) || sprite.lives == 0)
             {
+                mmStop();
                 final_screen(oam_mem, coin.currentScore, SPRITES_AMOUNT);
                 sprite_place_on_rect(&sprite, blockgen_get_topmost_block8(&bgen, 0));
                 sprite_coin_init_with_colis(&coin, &obj_buffer[1],&sprite);
