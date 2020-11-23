@@ -10,14 +10,10 @@
 #include "Clock.h"
 #include "StopWatch.h"
 #include "Runner.h"
+#include "Alarm.h"
 
 #define SPRITE_BUFFER_SIZE 8 // "00:00:00"
 #define OPTIONS_AMOUNT 3
-
-typedef struct _PushData {
-	DispCtrl * dc;
-	void (*func);
-} PushData;
 
 void test1_click()
 {
@@ -39,10 +35,10 @@ void open_alarm(DispCtrl * dc)
 	DispCtrl_push(dc, run_alarm);
 }
 
-void dispctrl_test()
+void start_dispctrl()
 {
-	OptsChser oc;
 	DispCtrl dc;
+	OptsChser oc;
 	OptionText options[OPTIONS_AMOUNT];
 	OptionFunction functions[OPTIONS_AMOUNT];
 	OptionFunction function_buffer[STACK_MAX_CAPACITY];
@@ -76,9 +72,7 @@ void dispctrl_test()
 int main()
 {
 	run_init();
-
-	// nprinter_test();
-	dispctrl_test();
+	start_dispctrl();
 
 	return 0;
 }

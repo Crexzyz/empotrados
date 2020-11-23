@@ -15,17 +15,20 @@ void TimeChooser_init(TimeChooser * tc, NumberPrinter * np, u8 x, u8 y)
     tc->buffer[TIME_CHOOSER_SECOND_COLON] = ':';
 }
 
-void TimeChooser_show(TimeChooser * tc)
+bool TimeChooser_show(TimeChooser * tc)
 {
+    bool save_pressed = false;
     if(tc->editing)
     {
-        TimeChooser_edit(tc);
+        save_pressed = TimeChooser_edit(tc);
         np_print_highlight(tc->np, tc->start_x, tc->start_y, WHITE, BLACK, tc->current_number, tc->buffer, TIME_CHOOSER_BUF_SIZE);
     }
     else
     {
         np_print(tc->np, tc->start_x, tc->start_y, WHITE, tc->buffer, TIME_CHOOSER_BUF_SIZE);
     }
+
+    return save_pressed;
 }
 
 void TimeChooser_toggle_edit(TimeChooser * tc)
@@ -33,8 +36,9 @@ void TimeChooser_toggle_edit(TimeChooser * tc)
     tc->editing = !tc->editing;
 }
 
-void TimeChooser_edit(TimeChooser * tc)
+bool TimeChooser_edit(TimeChooser * tc)
 {
+    bool save_pressed = false;
     if(key_hit(KEY_UP))
     {
         if(IS_MINUTE_LIMIT(tc->current_number))
@@ -90,28 +94,26 @@ void TimeChooser_edit(TimeChooser * tc)
         // Wait till key released
         while(!key_released(KEY_A))
             key_poll();
+
+        save_pressed = true;
     }
+
+    return save_pressed;
 }
 
-int test = 0;
-
-void TimeChooser_handle_alarm()
+u16 TimeChooser_buffer2secs(TimeChooser * tc)
 {
-    char buf[30];
-    snprintf(buf, 30, "#{P:50,50} ALARM %d", test++);
-    tte_write(buf);
+    u16 seconds = TIMECHOOSER_CTOI(tc->buffer[TIME_CHOOSER_SECOND_INDEX + 1]);
+    seconds += TIMECHOOSER_CTOI(tc->buffer[TIME_CHOOSER_SECOND_INDEX]) * 10;
 
-    irq_delete(II_TIMER1);
+    u16 minutes = TIMECHOOSER_CTOI(tc->buffer[TIME_CHOOSER_MINUTE_INDEX + 1]);
+    minutes += TIMECHOOSER_CTOI(tc->buffer[TIME_CHOOSER_MINUTE_INDEX]) * 10;
+
+    u16 hours = TIMECHOOSER_CTOI(tc->buffer[0 + 1]);
+    hours += TIMECHOOSER_CTOI(tc->buffer[0]) * 10;
+
+    seconds += minutes * 60;
+    seconds += hours * 60 * 60;
+
+    return seconds;
 }
-
-void TimeChooser_add_alarm()
-{
-    REG_TM0D = -0x4000;
-    REG_TM0CNT = TM_ENABLE | TM_FREQ_1024;
-
-    REG_TM1D = -1;
-    REG_TM1CNT = TM_ENABLE | TM_CASCADE;
-
-    irq_add(II_TIMER1, TimeChooser_handle_alarm);
-}
-

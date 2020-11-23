@@ -1,14 +1,16 @@
 #include "Clock.h"
 
 void init_clock(Clock* clock){
-    irq_init(NULL);
     REG_TM2D = -0x4000; // Init in value: 0xFFFFC000 - Have 3FFF space to clock until overflow
     REG_TM2CNT = TM_FREQ_1024 | TM_ENABLE; // frequency 1024 cycles of CPU makes overflow
     REG_TM3CNT = TM_ENABLE | TM_CASCADE; // Have the seconds
 
-    clock->seconds = TIME_OVERFLOW;
-    clock->minutes = 0;
-    clock->hours = 0;
+    if(clock)
+    {
+        clock->seconds = TIME_OVERFLOW;
+        clock->minutes = 0;
+        clock->hours = 0;
+    }
 }
 
 void update_clock(Clock* clock){

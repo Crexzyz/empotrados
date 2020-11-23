@@ -11,6 +11,7 @@
 #include "Clock.h"
 #include "StopWatch.h"
 #include "TimeChooser.h"
+#include "Alarm.h"
 
 OBJ_ATTR obj_buffer[128];
 
@@ -23,6 +24,9 @@ void run_init()
 	oam_init(obj_buffer, 128);
 
 	tte_init_se_default(0, BG_CBB(0) | BG_SBB(31));
+
+	// Just init the registers
+	init_clock(NULL);
 }
 
 void runner_rainbow_print(Clock * clock, char * buffer, NumberPrinter * np, u8 x, u8 y, size_t len)
@@ -69,6 +73,9 @@ void run_clock(DispCtrl * dc)
 			runner_rainbow_print(&clock, buf, &np, 50, 30, SPRITE_BUFFER_SIZE + 1);
 			oam_copy(oam_mem, obj_buffer, SPRITE_BUFFER_SIZE);
 		}
+
+		if(alarm_raised)
+			DispCtrl_back(dc);
 
 		if(dc->content_change == true)
 			break;
@@ -127,6 +134,9 @@ void run_stopwatch(DispCtrl * dc)
 			update_stop_watch(&stopWatch, &clockWatch);
 		}
 
+		if(alarm_raised)
+			DispCtrl_back(dc);
+
 		if(dc->content_change == true)
 			break;
 	}
@@ -175,7 +185,10 @@ void run_alarm(DispCtrl * dc)
 		key_poll();
 		frame_counter = (frame_counter + 1) % 60;
 
-		TimeChooser_show(&tc);
+		// If save pressed
+		if (TimeChooser_show(&tc) )
+			if(clock.seconds < TimeChooser_buffer2secs(&tc))
+				alarm_set(TimeChooser_buffer2secs(&tc) - REG_TM3D);
 
 		if(frame_counter % 10 == 0)
 			runner_rainbow_print(&clock, buf, &np_clock, 112, 40, SPRITE_BUFFER_SIZE + 1);
@@ -193,6 +206,10 @@ void run_alarm(DispCtrl * dc)
 
 		oam_copy(oam_mem, obj_buffer, SPRITE_BUFFER_SIZE);
 		oam_copy(&oam_mem[SPRITE_BUFFER_SIZE], sprite_buf, TIME_CHOOSER_BUF_SIZE - 1);
+
+		if(alarm_raised)
+			DispCtrl_back(dc);
+
 		if(dc->content_change == true)
 			break;
 	}
@@ -203,35 +220,62 @@ void run_alarm(DispCtrl * dc)
 	dc->content_change = false;
 }
 
-void run_nprinter_test(DispCtrl * dc)
+void run_alarm_alert(DispCtrl * dc)
 {
-    NumberPrinter np;
-	np_init(&np, &obj_buffer[0], SPRITE_BUFFER_SIZE);
-	char buf[SPRITE_BUFFER_SIZE + 1]; buf[SPRITE_BUFFER_SIZE] = 0; 
-	// char tbuf[30];
+	OptionText options[1];
+	OptionText_init(&options[0], "Back", strlen("Back"));
 
-	u8 color = WHITE;
+	OptionFunction functions[1];
+	OptFunc_init(&functions[0], DispCtrl_back, dc);
+
+	OptsChser oc;
+	OptsChser_init(&oc, options, 1, functions);
+	OptsChser_set_coords(&oc, 0, 140);
+
+	u32 frame_counter = 0;
 
 	while(true)
 	{
-		for(size_t i = 0; i < 10; ++i)
-			VBlankIntrWait();
+		VBlankIntrWait();
+
+		frame_counter = (frame_counter + 1) % 60;
+
+		if(frame_counter > 55)
+			tte_set_color(TTE_INK, CLR_RED);
+		else if(frame_counter > 50)
+			tte_set_color(TTE_INK, CLR_ORANGE);
+		else if(frame_counter > 45)
+			tte_set_color(TTE_INK, CLR_YELLOW);
+		else if(frame_counter > 40)
+			tte_set_color(TTE_INK, CLR_LIME);
+		else if(frame_counter > 35)
+			tte_set_color(TTE_INK, CLR_GREEN);
+		else if(frame_counter > 30)
+			tte_set_color(TTE_INK, CLR_CYAN);	
+		else if(frame_counter > 25)
+			tte_set_color(TTE_INK, CLR_BLUE);
+		else if(frame_counter > 20)
+			tte_set_color(TTE_INK, CLR_MAG);
+		else if(frame_counter > 15)
+			tte_set_color(TTE_INK, CLR_FUCHSIA);
+		else if(frame_counter > 10)
+			tte_set_color(TTE_INK, CLR_SKYBLUE);
+		else
+			tte_set_color(TTE_INK, CLR_WHITE);
+
+		tte_write("#{P:26,54} A L A R M - A L A R M");
+		tte_write("#{P:26,70} A L A R M - A L A R M");
+		tte_write("#{P:26,80} A L A R M - A L A R M");
+		tte_write("#{P:26,96} A L A R M - A L A R M");
 
 		key_poll();
+		OptsChser_show(&oc);
 
-		if(key_hit(KEY_B))
-			color = (color + 1) % (YELLOW + 1);
-
-		if(key_hit(KEY_A))
-		{
-			u16 num = qran_range(0, 61);
-			snprintf(buf, SPRITE_BUFFER_SIZE + 1, "%02d:%02d:%02d", num, num, num);
-			
-			// snprintf(tbuf, 30, "#{P:24,10} %s %d", buf, SPRITE_BUFFER_SIZE);
-			// tte_write(tbuf);
-		}
-
-		np_rainbow_print(&np, 30, 30, buf, strnlen(buf, SPRITE_BUFFER_SIZE + 1));
-		oam_copy(oam_mem, obj_buffer, SPRITE_BUFFER_SIZE);
+		if(dc->content_change == true)
+			break;
 	}
+
+	alarm_raised = false;
+	dc->content_change = false;
+	tte_set_color(TTE_INK, CLR_YELLOW);
 }

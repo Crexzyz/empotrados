@@ -12,6 +12,7 @@
 #define TIME_CHOOSER_SECOND_INDEX 6
 
 #define IS_MINUTE_LIMIT(index) (index == TIME_CHOOSER_MINUTE_INDEX || index == TIME_CHOOSER_SECOND_INDEX)
+#define TIMECHOOSER_CTOI(character) (character - '0')
 
 typedef struct _TimeChooser {
     u8 current_number;
@@ -23,10 +24,11 @@ typedef struct _TimeChooser {
 } TimeChooser;
 
 void TimeChooser_init(TimeChooser * tc, NumberPrinter * np, u8 x, u8 y);
-void TimeChooser_show(TimeChooser * tc);
-void TimeChooser_edit(TimeChooser * tc);
+bool TimeChooser_show(TimeChooser * tc);
+bool TimeChooser_edit(TimeChooser * tc);
 void TimeChooser_toggle_edit(TimeChooser * tc);
 void TimeChooser_add_alarm();
+u16 TimeChooser_buffer2secs(TimeChooser * tc);
 
 INLINE char * TimeChooser_get_time(TimeChooser * tc) { return tc->buffer; }
 

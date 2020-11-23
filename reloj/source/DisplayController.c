@@ -1,4 +1,6 @@
 #include "DisplayController.h"
+#include "Alarm.h"
+#include "Runner.h"
 
 #include <tonc.h>
 #include <string.h>
@@ -11,6 +13,11 @@ void DispCtrl_init(DispCtrl * dc, char * title, u8 t_len, OptionFunction * func_
     stack_init(&dc->stack, func_buffer);
 }
 
+void open_alarm_alert(DispCtrl * dc)
+{
+	DispCtrl_push(dc, run_alarm_alert);
+}
+
 void DispCtrl_show(DispCtrl * dc)
 {
     tte_write("#{es}");
@@ -19,6 +26,9 @@ void DispCtrl_show(DispCtrl * dc)
     snprintf(buf, buf_size, "%s%s (%d)", TONC_TITLE_POS, dc->title, dc->stack.top);
     tte_write(buf);
     
+    if(alarm_raised)
+        open_alarm_alert(dc);
+
     OptionFunction * function = stack_peek(&dc->stack);
 
     if(function)
