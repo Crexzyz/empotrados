@@ -27,6 +27,7 @@ void run_init()
 
 	// Just init the registers
 	init_clock(NULL);
+	alarm_set(0);
 }
 
 void runner_rainbow_print(Clock * clock, char * buffer, NumberPrinter * np, u8 x, u8 y, size_t len)
