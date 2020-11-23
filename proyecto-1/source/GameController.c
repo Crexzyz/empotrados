@@ -9,6 +9,7 @@
 #include "Trap.h"
 #include "music.h"
 #include "twoCloud.h"
+#include "space.h"
 #include "win.h"
 #include "init.h"
 #include "Heart.h"
@@ -123,10 +124,6 @@ void gamectrl_start()
                 // Clean text
 			    tte_write("#{es}");
 
-                // DMA-copy the background
-                dma3_cpy(pal_bg_mem, twoCloudPal, twoCloudPalLen);
-                dma3_cpy(tile_mem[0], twoCloudTiles, twoCloudTilesLen);
-                dma3_cpy(se_mem[30], twoCloudMap, twoCloudMapLen);
                 if(!second_level)
                     mmStart( MOD_FLATOUTLIES, MM_PLAY_LOOP );
 
@@ -138,8 +135,18 @@ void gamectrl_start()
             if(!second_level){
                 coin.currentScore = 0;
                 gamectrl_show_first_lvl(totalScore, &frame_counter, &h2Scroll);
-            
-            }else{
+
+				// DMA-copy the background
+				dma3_cpy(pal_bg_mem, twoCloudPal, twoCloudPalLen);
+				dma3_cpy(tile_mem[0], twoCloudTiles, twoCloudTilesLen);
+				dma3_cpy(se_mem[30], twoCloudMap, twoCloudMapLen);
+
+			}else{
+				// DMA-copy the background
+				dma3_cpy(pal_bg_mem, spacePal, spacePalLen);
+				dma3_cpy(tile_mem[0], spaceTiles, spaceTilesLen);
+				dma3_cpy(se_mem[30], spaceMap, spaceMapLen);				
+
                 gamectrl_show_second_lvl(totalScore, &frame_counter, &h2Scroll);
                 VBlankIntrWait(); 
                 mmFrame(); 
