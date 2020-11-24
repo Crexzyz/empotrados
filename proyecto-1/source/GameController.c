@@ -31,6 +31,32 @@ static PATTERN pats[HWLEN];
 static Enemy enemy1;
 static Enemy enemy2;
 
+bool win = false;
+
+
+void dma_handler(){
+	bool finish = false;
+    char buf[50] = {};
+	sec = REG_TM3D;
+
+	while(false == finish){
+		if(REG_TM3D != sec){
+			sec = REG_TM3D;
+			if(((sec%60) % 4) == 0){
+				finish = true;
+			}
+		}
+		snprintf(buf, 50, "#{P:24,60} Cargando \t\t%02d:%02d:%02d",
+            sec/3600, (sec%3600)/60, sec%60);
+        tte_write(buf);
+	}
+
+    // Clean text
+	tte_write("#{es}");
+	REG_IE |= IRQ_DMA3;
+}
+
+
 void gamectrl_init_regs()
 {
     REG_BG1CNT = BG_CBB(0) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;
@@ -42,6 +68,7 @@ void gamectrl_init_interrupts()
 {
     irq_init(NULL);
     irq_add(II_VBLANK, NULL);
+    irq_add(II_DMA3, dma_handler);
 }
 
 void gamectrl_init()
@@ -56,11 +83,12 @@ void gamectrl_init()
     //init sprite tittle text
     txt_init_std();
 
+    REG_IE |= IRQ_DMA3;
 	// Load first background
 	dma3_cpy(pal_bg_mem, initPal, initPalLen);
     dma3_cpy(tile_mem[0], initTiles, initTilesLen);
-    dma3_cpy(se_mem[30], initMap, initMapLen);
-    
+	DMA_TRANSFER(se_mem[30], initMap, initMapLen/4, 3, DMA_CPY32 | DMA_IRQ | DMA_ENABLE);
+
     //12 px between letters
     gptxt->dx = 12;
 
@@ -71,11 +99,12 @@ void gamectrl_init()
 
 int gamectrl_run()
 {
-	gamectrl_init();
 
     REG_TM2D = -0x4000; // 0xFFFFC000
     REG_TM2CNT = TM_FREQ_1024 | TM_ENABLE;
     REG_TM3CNT = TM_ENABLE | TM_CASCADE;
+
+	gamectrl_init();
 
     sprite_init(&sprite, &obj_buffer[0]);
 	sprite_coin_init(&coin, &obj_buffer[1]);
@@ -101,7 +130,6 @@ void gamectrl_start()
 	char totalScore[100]; 
 
 	bool start = false;
-	bool win = false;
     bool second_level= false;
 
 	int hScroll = 0;
