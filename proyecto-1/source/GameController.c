@@ -216,6 +216,7 @@ void gamectrl_start()
                 dma3_cpy(pal_bg_mem, twoCloudPal, twoCloudPalLen);
                 dma3_cpy(tile_mem[0], twoCloudTiles, twoCloudTilesLen);
                 dma3_cpy(se_mem[30], twoCloudMap, twoCloudMapLen);
+                sprite_place_on_rect(&sprite, blockgen_get_topmost_block8(&bgen, 0));
                 sprite.jumps = 0;
                 second_level= true;
                 start = false;
@@ -275,6 +276,8 @@ bool gamectrl_show_main_menu()
 
 void gamectrl_show_first_lvl(char * totalScore, u32 * frame_counter, int * h2Scroll)
 {
+    tte_set_color(TTE_INK, CLR_BLACK);
+
     for(int i = 0; i < BLOCKS_AMOUNT; ++i)
         rect_paint(&bgen.blocks[i]);
 
@@ -309,7 +312,7 @@ void gamectrl_show_first_lvl(char * totalScore, u32 * frame_counter, int * h2Scr
 
 void gamectrl_show_second_lvl(char * totalScore, u32 * frame_counter, int * h2Scroll)
 {
-
+    tte_set_color(TTE_INK, CLR_SKYBLUE);
     for(int i = 0; i < BLOCKS_AMOUNT; ++i)
         rect_paint(&bgen.blocks[i]);
 
